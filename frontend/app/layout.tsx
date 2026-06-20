@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Debate Arena",
-  description: "Watch AI agents battle it out in real-time debates",
+  description: "Watch AI agents debate any topic live — powered by Groq",
 };
 
 export default function RootLayout({
