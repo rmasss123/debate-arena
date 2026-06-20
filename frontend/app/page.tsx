@@ -1,77 +1,223 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 
-const AGENTS = [
+const API = "http://127.0.0.1:8000";
+
+const FIGHTERS = [
   {
     id: "Optimist",
-    emoji: "🌟",
-    label: "Optimist",
-    description: "Champions the positive, highlights opportunities and best outcomes",
-    color: "border-emerald-500 bg-emerald-500/10 text-emerald-300",
-    activeRing: "ring-2 ring-emerald-500",
+    emoji: "☀️",
+    tagline: "The Eternal Believer",
+    color: "#10b981",
+    glow: "rgba(16,185,129,0.5)",
+    dimBg: "rgba(16,185,129,0.06)",
+    neonClass: "neon-emerald",
   },
   {
     id: "Critic",
-    emoji: "🔍",
-    label: "Critic",
-    description: "Questions assumptions, exposes risks and overlooked downsides",
-    color: "border-rose-500 bg-rose-500/10 text-rose-300",
-    activeRing: "ring-2 ring-rose-500",
+    emoji: "💀",
+    tagline: "The Devil's Advocate",
+    color: "#f43f5e",
+    glow: "rgba(244,63,94,0.5)",
+    dimBg: "rgba(244,63,94,0.06)",
+    neonClass: "neon-rose",
   },
   {
     id: "Philosopher",
-    emoji: "🦉",
-    label: "Philosopher",
-    description: "Seeks deeper truths through ethics, logic, and first principles",
-    color: "border-violet-500 bg-violet-500/10 text-violet-300",
-    activeRing: "ring-2 ring-violet-500",
+    emoji: "👁️",
+    tagline: "The Truth Seeker",
+    color: "#8b5cf6",
+    glow: "rgba(139,92,246,0.5)",
+    dimBg: "rgba(139,92,246,0.06)",
+    neonClass: "neon-violet",
   },
-];
+] as const;
 
-function AgentSelector({
-  label,
-  value,
-  onChange,
-  disabledId,
-}: {
-  label: string;
-  value: string;
-  onChange: (id: string) => void;
-  disabledId: string;
-}) {
+/* ---------- Particles ---------- */
+function Particles() {
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 28 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        size: Math.random() * 2.5 + 0.8,
+        duration: Math.random() * 18 + 12,
+        delay: Math.random() * 12,
+        drift: (Math.random() - 0.5) * 120,
+        opacity: Math.random() * 0.45 + 0.1,
+        color: ["#a855f7", "#8b5cf6", "#6366f1", "#ec4899", "#10b981"][Math.floor(Math.random() * 5)],
+      })),
+    []
+  );
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-sm font-semibold uppercase tracking-widest text-purple-400">{label}</p>
-      <div className="flex flex-col gap-2">
-        {AGENTS.map((agent) => {
-          const isSelected = value === agent.id;
-          const isDisabled = disabledId === agent.id;
-          return (
-            <button
-              key={agent.id}
-              type="button"
-              disabled={isDisabled}
-              onClick={() => onChange(agent.id)}
-              className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all duration-150
-                ${isDisabled ? "cursor-not-allowed opacity-30 border-white/10 bg-white/5" : "cursor-pointer hover:scale-[1.01]"}
-                ${isSelected && !isDisabled ? `${agent.color} ${agent.activeRing}` : !isDisabled ? "border-white/10 bg-white/5 text-zinc-300 hover:border-white/20 hover:bg-white/10" : ""}
-              `}
-            >
-              <span className="text-xl">{agent.emoji}</span>
-              <div>
-                <p className="font-semibold text-sm">{agent.label}</p>
-                <p className="text-xs text-zinc-400 mt-0.5">{agent.description}</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="absolute bottom-0 rounded-full"
+          style={{
+            left: `${p.x}%`,
+            width: p.size,
+            height: p.size,
+            backgroundColor: p.color,
+            opacity: p.opacity,
+            animation: `particle-rise ${p.duration}s ${p.delay}s linear infinite`,
+            ["--drift" as string]: `${p.drift}px`,
+          }}
+        />
+      ))}
     </div>
   );
 }
 
+/* ---------- Gradient orbs ---------- */
+function GradientOrbs() {
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      <div
+        className="absolute rounded-full blur-3xl"
+        style={{
+          width: 500, height: 500,
+          top: "-15%", left: "-10%",
+          background: "radial-gradient(circle, rgba(168,85,247,0.18) 0%, transparent 70%)",
+          animation: "orb-drift-1 14s ease-in-out infinite",
+        }}
+      />
+      <div
+        className="absolute rounded-full blur-3xl"
+        style={{
+          width: 420, height: 420,
+          bottom: "-10%", right: "-8%",
+          background: "radial-gradient(circle, rgba(244,63,94,0.14) 0%, transparent 70%)",
+          animation: "orb-drift-2 18s ease-in-out infinite",
+        }}
+      />
+      <div
+        className="absolute rounded-full blur-3xl"
+        style={{
+          width: 340, height: 340,
+          top: "40%", left: "55%",
+          background: "radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 70%)",
+          animation: "orb-drift-3 22s ease-in-out infinite",
+        }}
+      />
+    </div>
+  );
+}
+
+/* ---------- Typewriter ---------- */
+function TypewriterText({ text, speed = 40 }: { text: string; speed?: number }) {
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    setDisplayed("");
+    setDone(false);
+    let i = 0;
+    const t = setInterval(() => {
+      i++;
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) { clearInterval(t); setDone(true); }
+    }, speed);
+    return () => clearInterval(t);
+  }, [text, speed]);
+
+  return (
+    <span>
+      {displayed}
+      {!done && <span className="text-purple-400 opacity-80">|</span>}
+    </span>
+  );
+}
+
+/* ---------- Fighter card ---------- */
+function FighterCard({
+  fighter,
+  isSelected,
+  isDisabled,
+  onSelect,
+}: {
+  fighter: typeof FIGHTERS[number];
+  isSelected: boolean;
+  isDisabled: boolean;
+  onSelect: () => void;
+}) {
+  const [shaking, setShaking] = useState(false);
+
+  function handleClick() {
+    if (isDisabled || isSelected) return;
+    setShaking(true);
+    setTimeout(() => setShaking(false), 550);
+    onSelect();
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={isDisabled}
+      className={`w-full text-left rounded-xl border transition-all duration-300 p-3 relative overflow-hidden
+        ${shaking ? "fighter-shake" : ""}
+        ${isDisabled ? "opacity-20 cursor-not-allowed" : "cursor-pointer"}
+        ${!isDisabled && !isSelected ? "hover:scale-[1.02]" : ""}
+      `}
+      style={{
+        borderColor: isSelected ? fighter.color : isDisabled ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.08)",
+        background: isSelected ? fighter.dimBg : "rgba(255,255,255,0.02)",
+        boxShadow: isSelected
+          ? `0 0 20px ${fighter.glow}, 0 0 40px ${fighter.glow.replace("0.5", "0.25")}`
+          : "none",
+      }}
+    >
+      {/* Flash overlay on select */}
+      {shaking && (
+        <div
+          className="absolute inset-0 rounded-xl pointer-events-none"
+          style={{ background: `${fighter.color}22`, animation: "vs-flash 0.15s ease 2" }}
+        />
+      )}
+
+      <div className="flex items-center gap-3">
+        {/* Avatar circle */}
+        <div
+          className="w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0 transition-all duration-300"
+          style={{
+            border: `2px solid ${isSelected ? fighter.color : "rgba(255,255,255,0.1)"}`,
+            background: `radial-gradient(circle, ${fighter.dimBg} 0%, transparent 70%)`,
+            boxShadow: isSelected ? `0 0 14px ${fighter.glow}` : "none",
+          }}
+        >
+          {fighter.emoji}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-sm text-white tracking-wide">{fighter.id.toUpperCase()}</p>
+          <p
+            className="text-xs mt-0.5 truncate transition-colors duration-300"
+            style={{ color: isSelected ? fighter.color : "#6b7280" }}
+          >
+            {fighter.tagline}
+          </p>
+        </div>
+
+        {isSelected && (
+          <div
+            className="text-[10px] font-black px-2 py-0.5 rounded tracking-widest flex-shrink-0"
+            style={{ background: fighter.color, color: "#000" }}
+          >
+            P1
+          </div>
+        )}
+      </div>
+    </button>
+  );
+}
+
+/* ============================================================
+   HOME PAGE
+   ============================================================ */
 export default function Home() {
   const router = useRouter();
   const [topic, setTopic] = useState("");
@@ -79,26 +225,23 @@ export default function Home() {
   const [agentB, setAgentB] = useState("Critic");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [btnHover, setBtnHover] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!topic.trim()) return;
-
+    if (!topic.trim() || loading) return;
     setLoading(true);
     setError("");
-
     try {
-      const res = await fetch("http://127.0.0.1:8000/debate/start", {
+      const res = await fetch(`${API}/debate/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic: topic.trim(), agent_a: agentA, agent_b: agentB }),
       });
-
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.detail || "Failed to start debate");
+        const d = await res.json();
+        throw new Error(d.detail || "Failed to start debate");
       }
-
       const data = await res.json();
       router.push(`/debate/${data.debate_id}`);
     } catch (err: unknown) {
@@ -108,80 +251,171 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16"
-      style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.12) 0%, #0c0c10 60%)" }}
-    >
-      <div className="w-full max-w-2xl">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-1.5 text-sm text-purple-300 mb-6">
-            ⚔️ AI Debate Arena
-          </div>
-          <h1 className="text-5xl font-bold tracking-tight text-white mb-4">
-            Let the{" "}
-            <span className="bg-gradient-to-r from-purple-400 to-violet-300 bg-clip-text text-transparent">
-              debate
-            </span>{" "}
-            begin
-          </h1>
-          <p className="text-zinc-400 text-lg">
-            Pick a topic, choose your combatants, and watch AI agents clash in real time.
-          </p>
-        </div>
+    <div className="scanlines min-h-screen flex flex-col relative" style={{ background: "#08080d" }}>
+      <Particles />
+      <GradientOrbs />
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-          {/* Topic */}
+      {/* Scanline sweep */}
+      <div
+        className="fixed left-0 right-0 h-16 pointer-events-none z-10"
+        style={{
+          background: "linear-gradient(transparent, rgba(255,255,255,0.015), transparent)",
+          animation: "scanline-sweep 10s linear infinite",
+        }}
+      />
+
+      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-16">
+        <div className="w-full max-w-3xl flex flex-col gap-10">
+
+          {/* ── TITLE ── */}
+          <div className="text-center">
+            <p className="text-xs font-bold tracking-[0.4em] text-purple-500 uppercase mb-5">
+              ⚡ AI-Powered · Real-Time · Live Voting
+            </p>
+            <h1
+              className="glitch-text font-black text-white leading-none select-none mb-6"
+              data-text="DEBATE ARENA"
+              style={{
+                fontSize: "clamp(3rem, 10vw, 7rem)",
+                letterSpacing: "-0.02em",
+                textShadow: "0 0 40px rgba(168,85,247,0.4), 0 0 80px rgba(168,85,247,0.15)",
+              }}
+            >
+              DEBATE ARENA
+            </h1>
+            <p className="text-zinc-400 text-lg sm:text-xl min-h-[1.8em]">
+              <TypewriterText
+                text="Two AI minds. One topic. You decide who wins."
+                speed={45}
+              />
+            </p>
+          </div>
+
+          {/* ── FIGHTER SELECT ── */}
+          <div>
+            <p
+              className="text-center text-xs font-black tracking-[0.35em] uppercase mb-5"
+              style={{
+                color: "#a855f7",
+                textShadow: "0 0 20px rgba(168,85,247,0.6)",
+              }}
+            >
+              ⚔ SELECT YOUR FIGHTERS ⚔
+            </p>
+
+            {/* 3-column layout: A | VS | B */}
+            <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-start">
+              {/* Agent A column */}
+              <div className="flex flex-col gap-2">
+                <p className="text-[11px] font-black tracking-widest text-center uppercase text-emerald-400 mb-1">
+                  Player 1
+                </p>
+                {FIGHTERS.map((f) => (
+                  <FighterCard
+                    key={f.id}
+                    fighter={f}
+                    isSelected={agentA === f.id}
+                    isDisabled={agentB === f.id}
+                    onSelect={() => setAgentA(f.id)}
+                  />
+                ))}
+              </div>
+
+              {/* VS */}
+              <div className="flex items-center justify-center pt-8 px-2">
+                <span
+                  className="vs-flash font-black text-2xl sm:text-3xl select-none"
+                  style={{ color: "#a855f7", letterSpacing: "0.05em" }}
+                >
+                  VS
+                </span>
+              </div>
+
+              {/* Agent B column */}
+              <div className="flex flex-col gap-2">
+                <p className="text-[11px] font-black tracking-widest text-center uppercase text-rose-400 mb-1">
+                  Player 2
+                </p>
+                {FIGHTERS.map((f) => (
+                  <FighterCard
+                    key={f.id}
+                    fighter={f}
+                    isSelected={agentB === f.id}
+                    isDisabled={agentA === f.id}
+                    onSelect={() => setAgentB(f.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ── TOPIC ── */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-semibold uppercase tracking-widest text-purple-400">
-              Debate Topic
+            <label className="text-[11px] font-black tracking-[0.3em] uppercase text-purple-400">
+              ▶ Enter Debate Topic
             </label>
             <textarea
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              placeholder="e.g. AI will ultimately benefit humanity more than it harms it"
+              placeholder="e.g.  AI will ultimately benefit humanity more than it harms it…"
               rows={3}
-              className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-zinc-500 outline-none transition focus:border-purple-500/60 focus:ring-2 focus:ring-purple-500/20"
-            />
-          </div>
-
-          {/* Agent selectors */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <AgentSelector
-              label="Agent A"
-              value={agentA}
-              onChange={setAgentA}
-              disabledId={agentB}
-            />
-            <AgentSelector
-              label="Agent B"
-              value={agentB}
-              onChange={setAgentB}
-              disabledId={agentA}
+              className="w-full resize-none rounded-xl px-4 py-3 text-white placeholder-zinc-600 outline-none transition-all duration-300 text-[15px] leading-relaxed"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(168,85,247,0.2)",
+                boxShadow: topic ? "0 0 0 1px rgba(168,85,247,0.4), 0 0 20px rgba(168,85,247,0.1)" : "none",
+              }}
+              onFocus={(e) => {
+                e.target.style.border = "1px solid rgba(168,85,247,0.7)";
+                e.target.style.boxShadow = "0 0 0 1px rgba(168,85,247,0.4), 0 0 25px rgba(168,85,247,0.15)";
+              }}
+              onBlur={(e) => {
+                e.target.style.border = "1px solid rgba(168,85,247,0.2)";
+                e.target.style.boxShadow = topic ? "0 0 0 1px rgba(168,85,247,0.3)" : "none";
+              }}
             />
           </div>
 
           {error && (
-            <p className="text-rose-400 text-sm text-center">{error}</p>
+            <p className="text-rose-400 text-sm text-center -mt-4"
+               style={{ textShadow: "0 0 10px rgba(244,63,94,0.5)" }}>
+              ⚠ {error}
+            </p>
           )}
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading || !topic.trim()}
-            className="w-full rounded-xl bg-purple-600 py-4 text-base font-semibold text-white transition-all hover:bg-purple-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin inline-block" />
-                Starting debate…
-              </span>
-            ) : (
-              "Start Debate ⚔️"
-            )}
-          </button>
-        </form>
-      </div>
+          {/* ── START BUTTON ── */}
+          <div className="flex flex-col items-center gap-3">
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={loading || !topic.trim()}
+              onMouseEnter={() => setBtnHover(true)}
+              onMouseLeave={() => setBtnHover(false)}
+              className="w-full rounded-xl py-5 text-base font-black tracking-widest uppercase text-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40"
+              style={{
+                background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 40%, #dc2626 100%)",
+                animation: !loading && topic.trim() ? "btn-pulse 2s ease-in-out infinite" : "none",
+                transform: btnHover && !loading ? "scale(1.015)" : "scale(1)",
+              }}
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-3">
+                  <span className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  Initializing Combat…
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  ⚡ START DEBATE ⚡
+                </span>
+              )}
+            </button>
+            <p className="text-zinc-600 text-xs tracking-wider">
+              Powered by Groq AI — arguments generated in real time
+            </p>
+          </div>
+
+        </div>
+      </main>
     </div>
   );
 }
