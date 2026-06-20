@@ -73,6 +73,12 @@ function RoundOverlay({ round, show }: { round: number; show: boolean }) {
 
 interface ArgData { argument_id: string; agent: string; round: number; content: string; }
 
+interface SavedDebate {
+  debate: { topic: string; agent_a: string; agent_b: string };
+  arguments: Array<{ id: string; agent_name: string; round_number: number; content: string }>;
+  vote: { winner_agent: string } | null;
+}
+
 function ArgCard({ arg, side, canVote, onVote, voteLoading }: {
   arg: ArgData; side: "left" | "right"; canVote: boolean; onVote: (a: string) => void; voteLoading: boolean;
 }) {
@@ -151,7 +157,9 @@ export default function DebatePage() {
   const [agents, setAgents] = useState<string[]>([]);
   const [args, setArgs] = useState<ArgData[]>([]);
   const [summary, setSummary] = useState("");
-  const [status, setStatus] = useState<"idle"|"streaming"|"done"|"error">("idle");
+  const [status, setStatus] = useState<"idle"|"streaming"|"done"|"restored"|"error">("idle");
+  const [sessionMode, setSessionMode] = useState<"checking"|"prompt"|"live"|"restored">("checking");
+  const [savedDebate, setSavedDebate] = useState<SavedDebate | null>(null);
   const [error, setError] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
   const [totalVotes, setTotalVotes] = useState(0);
@@ -162,6 +170,7 @@ export default function DebatePage() {
   const [roundNum, setRoundNum] = useState(1);
 
   const bottomRef = useRef<HTMLDivElement>(null);
+  const sessionChecked = useRef(false);
   const streamStarted = useRef(false);
   const announcedRound = useRef(0);
   const roundTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -172,9 +181,48 @@ export default function DebatePage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [argsLen, summary]);
 
+  // A newly created debate starts immediately. Existing URLs and reloads ask
+  // whether the user wants the persisted session or a clean debate.
+  useEffect(() => {
+    if (!id || sessionChecked.current) return;
+    sessionChecked.current = true;
+
+    async function inspectSession() {
+      try {
+        await Promise.resolve();
+        const newSessionKey = `debate-arena:new:${id}`;
+        if (sessionStorage.getItem(newSessionKey)) {
+          sessionStorage.removeItem(newSessionKey);
+          sessionStorage.setItem(`debate-arena:seen:${id}`, "true");
+          setSessionMode("live");
+          return;
+        }
+
+        const response = await fetch(`${API}/debate/${id}`);
+        if (!response.ok) throw new Error("Debate not found");
+        const data: SavedDebate = await response.json();
+        const wasOpened = sessionStorage.getItem(`debate-arena:seen:${id}`) === "true";
+
+        if (wasOpened || data.arguments.length > 0) {
+          setSavedDebate(data);
+          setSessionMode("prompt");
+        } else {
+          sessionStorage.setItem(`debate-arena:seen:${id}`, "true");
+          setSessionMode("live");
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not load debate");
+        setStatus("error");
+        setSessionMode("restored");
+      }
+    }
+
+    void inspectSession();
+  }, [id]);
+
   // SSE with StrictMode guard
   useEffect(() => {
-    if (!id || streamStarted.current) return;
+    if (!id || sessionMode !== "live" || streamStarted.current) return;
     streamStarted.current = true;
     setStatus("streaming");
     const es = new EventSource(`${API}/debate/${id}/stream`);
@@ -200,6 +248,7 @@ export default function DebatePage() {
     es.addEventListener("summary", (e) => {
       const d = JSON.parse(e.data);
       setSummary(d.content);
+      sessionStorage.setItem(`debate-arena:summary:${id}`, d.content);
     });
 
     es.addEventListener("done", () => { setStatus("done"); es.close(); });
@@ -209,7 +258,24 @@ export default function DebatePage() {
       es.close();
       if (roundTimer.current) clearTimeout(roundTimer.current);
     };
-  }, [id]);
+  }, [id, sessionMode]);
+
+  function continuePreviousSession() {
+    if (!savedDebate) return;
+    streamStarted.current = true;
+    setTopic(savedDebate.debate.topic);
+    setAgents([savedDebate.debate.agent_a, savedDebate.debate.agent_b]);
+    setArgs(savedDebate.arguments.map((argument) => ({
+      argument_id: argument.id,
+      agent: argument.agent_name,
+      round: argument.round_number,
+      content: argument.content,
+    })));
+    setSummary(sessionStorage.getItem(`debate-arena:summary:${id}`) ?? "");
+    setTotalVotes(savedDebate.vote ? 1 : 0);
+    setStatus("restored");
+    setSessionMode("restored");
+  }
 
   const castVote = useCallback(async (winner: string) => {
     if (voteLoading) return;
@@ -257,6 +323,113 @@ export default function DebatePage() {
 
   const truncatedTopic = topic.length > 55 ? topic.slice(0, 52) + "…" : topic;
 
+  if (sessionMode === "checking") {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#050508" }}>
+        <div className="w-8 h-8 rounded-full border-2 animate-spin"
+          style={{ borderColor: "rgba(124,58,237,0.2)", borderTopColor: "#7c3aed" }} />
+      </div>
+    );
+  }
+
+  if (sessionMode === "prompt") {
+    const savedArguments = savedDebate?.arguments.length ?? 0;
+    const savedRounds = new Set(savedDebate?.arguments.map((argument) => argument.round_number)).size;
+    const savedTopic = savedDebate?.debate.topic ?? "Your previous debate";
+
+    return (
+      <div className="timeline-fork min-h-screen flex items-center justify-center px-4 py-10 overflow-hidden" style={{ background: "#050508" }}>
+        <Particles />
+        <div className="timeline-orb timeline-orb-left" aria-hidden />
+        <div className="timeline-orb timeline-orb-right" aria-hidden />
+
+        <main className="relative z-10 w-full max-w-5xl">
+          <div className="text-center mb-8 sm:mb-12 fade-up">
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 mb-5"
+              style={{ color: "#a78bfa", background: "rgba(124,58,237,0.1)", border: "1px solid rgba(139,92,246,0.25)" }}>
+              <span className="timeline-signal h-1.5 w-1.5 rounded-full" />
+              <span className="text-[10px] font-bold tracking-[0.28em] uppercase">Timeline anomaly detected</span>
+            </div>
+            <h1 className="font-black text-white tracking-[-0.05em] leading-[0.9]"
+              style={{ fontSize: "clamp(3rem, 8vw, 6.5rem)" }}>
+              Choose your<br /><span className="timeline-gradient">reality.</span>
+            </h1>
+            <p className="mt-5 text-sm sm:text-base" style={{ color: "#71717a" }}>
+              A previous arena state is still alive. Pick a timeline to enter.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-6 items-stretch">
+            <button type="button" onClick={continuePreviousSession}
+              className="timeline-card timeline-card-continue group relative overflow-hidden rounded-[28px] p-6 sm:p-8 text-left min-h-[330px] flex flex-col">
+              <div className="timeline-scan" aria-hidden />
+              <div className="relative z-10 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-bold tracking-[0.3em] uppercase mb-2" style={{ color: "#a78bfa" }}>Timeline 01</p>
+                  <h2 className="text-2xl sm:text-3xl font-black text-white">Resume the clash</h2>
+                </div>
+                <span className="timeline-icon">↺</span>
+              </div>
+
+              <div className="relative z-10 my-7 rounded-2xl p-4"
+                style={{ background: "rgba(0,0,0,0.28)", border: "1px solid rgba(167,139,250,0.15)" }}>
+                <p className="text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: "#71717a" }}>Recovered topic</p>
+                <p className="text-sm text-zinc-200 line-clamp-2">“{savedTopic}”</p>
+                <div className="grid grid-cols-3 gap-2 mt-4">
+                  <div><strong className="block text-lg text-white">{savedArguments}</strong><span className="text-[9px] uppercase tracking-wider text-zinc-600">Arguments</span></div>
+                  <div><strong className="block text-lg text-white">{savedRounds}</strong><span className="text-[9px] uppercase tracking-wider text-zinc-600">Rounds</span></div>
+                  <div><strong className="block text-lg text-emerald-400">Safe</strong><span className="text-[9px] uppercase tracking-wider text-zinc-600">No replay</span></div>
+                </div>
+              </div>
+
+              <div className="relative z-10 mt-auto flex items-center justify-between">
+                <span className="text-sm font-semibold text-white">Enter saved arena</span>
+                <span className="timeline-arrow">→</span>
+              </div>
+            </button>
+
+            <div className="hidden md:flex flex-col items-center justify-center gap-3" aria-hidden>
+              <div className="w-px flex-1 timeline-divider" />
+              <span className="text-[9px] font-black tracking-[0.25em] text-zinc-700">OR</span>
+              <div className="w-px flex-1 timeline-divider" />
+            </div>
+
+            <button type="button" onClick={() => router.replace("/")}
+              className="timeline-card timeline-card-new group relative overflow-hidden rounded-[28px] p-6 sm:p-8 text-left min-h-[330px] flex flex-col">
+              <div className="relative z-10 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-bold tracking-[0.3em] uppercase mb-2" style={{ color: "#fb7185" }}>Timeline 02</p>
+                  <h2 className="text-2xl sm:text-3xl font-black text-white">Burn the script</h2>
+                </div>
+                <span className="timeline-icon timeline-icon-new">✦</span>
+              </div>
+
+              <div className="relative z-10 flex-1 flex items-center justify-center py-7">
+                <div className="fresh-core">
+                  <span className="fresh-ring fresh-ring-one" />
+                  <span className="fresh-ring fresh-ring-two" />
+                  <span className="relative z-10 text-4xl">⚡</span>
+                </div>
+              </div>
+
+              <p className="relative z-10 text-xs leading-relaxed mb-5" style={{ color: "#71717a" }}>
+                Leave this timeline untouched and return to an empty arena with new fighters and a new topic.
+              </p>
+              <div className="relative z-10 mt-auto flex items-center justify-between">
+                <span className="text-sm font-semibold text-white">Create new reality</span>
+                <span className="timeline-arrow timeline-arrow-new">→</span>
+              </div>
+            </button>
+          </div>
+
+          <p className="text-center mt-7 text-[10px] tracking-[0.16em] uppercase" style={{ color: "#3f3f46" }}>
+            Your saved timeline will not be overwritten
+          </p>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#050508" }}>
       <Particles />
@@ -294,6 +467,9 @@ export default function DebatePage() {
             )}
             {status === "done" && (
               <span className="text-[11px] font-medium text-emerald-500">Done</span>
+            )}
+            {status === "restored" && (
+              <span className="text-[11px] font-medium text-purple-400">Restored</span>
             )}
           </div>
         </div>
@@ -410,7 +586,7 @@ export default function DebatePage() {
         )}
 
         {/* New debate */}
-        {status === "done" && (
+        {(status === "done" || status === "restored") && (
           <div className="flex justify-center pt-4 pb-8">
             <button onClick={() => router.push("/")}
               className="px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"

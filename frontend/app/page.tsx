@@ -83,6 +83,7 @@ export default function Home() {
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.detail || "Failed"); }
       const data = await res.json();
+      sessionStorage.setItem(`debate-arena:new:${data.debate_id}`, "true");
       router.push(`/debate/${data.debate_id}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
