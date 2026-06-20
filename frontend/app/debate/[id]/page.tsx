@@ -7,44 +7,44 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 const FIGHTER_CONFIG: Record<
   string,
-  { color: string; glow: string; dimBg: string; borderColor: string; emoji: string; tagline: string; neonClass: string }
+  { color: string; dimBg: string; borderColor: string; emoji: string; tagline: string }
 > = {
   Optimist: {
-    color: "#10b981", glow: "rgba(16,185,129,0.55)", dimBg: "rgba(16,185,129,0.07)",
-    borderColor: "rgba(16,185,129,0.45)", emoji: "☀️", tagline: "The Eternal Believer", neonClass: "neon-emerald",
+    color: "#10b981", dimBg: "rgba(16,185,129,0.08)",
+    borderColor: "rgba(16,185,129,0.3)", emoji: "☀️", tagline: "The Eternal Believer",
   },
   Critic: {
-    color: "#f43f5e", glow: "rgba(244,63,94,0.55)", dimBg: "rgba(244,63,94,0.07)",
-    borderColor: "rgba(244,63,94,0.45)", emoji: "💀", tagline: "The Devil's Advocate", neonClass: "neon-rose",
+    color: "#f43f5e", dimBg: "rgba(244,63,94,0.08)",
+    borderColor: "rgba(244,63,94,0.3)", emoji: "💀", tagline: "The Devil's Advocate",
   },
   Philosopher: {
-    color: "#8b5cf6", glow: "rgba(139,92,246,0.55)", dimBg: "rgba(139,92,246,0.07)",
-    borderColor: "rgba(139,92,246,0.45)", emoji: "👁️", tagline: "The Truth Seeker", neonClass: "neon-violet",
+    color: "#8b5cf6", dimBg: "rgba(139,92,246,0.08)",
+    borderColor: "rgba(139,92,246,0.3)", emoji: "👁️", tagline: "The Truth Seeker",
   },
 };
 
 function getFighter(agent: string) {
   return FIGHTER_CONFIG[agent] ?? {
-    color: "#a855f7", glow: "rgba(168,85,247,0.55)", dimBg: "rgba(168,85,247,0.07)",
-    borderColor: "rgba(168,85,247,0.45)", emoji: "🤖", tagline: "Unknown", neonClass: "neon-purple",
+    color: "#7c3aed", dimBg: "rgba(124,58,237,0.08)",
+    borderColor: "rgba(124,58,237,0.3)", emoji: "🤖", tagline: "Unknown",
   };
 }
 
 /* ─── Particles ─── */
 const Particles = memo(function Particles() {
   const particles = useMemo(() =>
-    Array.from({ length: 20 }, (_, i) => ({
-      id: i, x: Math.random() * 100, size: Math.random() * 2 + 0.8,
-      duration: Math.random() * 20 + 14, delay: Math.random() * 14,
-      drift: (Math.random() - 0.5) * 100,
-      color: ["#a855f7", "#8b5cf6", "#10b981", "#f43f5e"][Math.floor(Math.random() * 4)],
+    Array.from({ length: 15 }, (_, i) => ({
+      id: i, x: Math.random() * 100, size: Math.random() * 0.8 + 0.5,
+      duration: Math.random() * 22 + 16, delay: Math.random() * 16,
+      drift: (Math.random() - 0.5) * 80,
+      color: ["#7c3aed", "#6d28d9", "#a78bfa"][Math.floor(Math.random() * 3)],
     })), []
   );
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {particles.map((p) => (
         <div key={p.id} className="absolute bottom-0 rounded-full"
-          style={{ left: `${p.x}%`, width: p.size, height: p.size, backgroundColor: p.color, opacity: 0.22,
+          style={{ left: `${p.x}%`, width: p.size, height: p.size, backgroundColor: p.color, opacity: 0.1,
             animation: `particle-rise ${p.duration}s ${p.delay}s linear infinite`,
             ["--drift" as string]: `${p.drift}px` }} />
       ))}
@@ -57,13 +57,13 @@ const GradientOrbs = memo(function GradientOrbs() {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       <div className="absolute rounded-full blur-3xl"
-        style={{ width: 400, height: 400, top: "-10%", left: "-8%",
-          background: "radial-gradient(circle, rgba(168,85,247,0.14) 0%, transparent 70%)",
-          animation: "orb-drift-1 16s ease-in-out infinite" }} />
+        style={{ width: 500, height: 500, top: "-15%", left: "-10%",
+          background: "radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 65%)",
+          animation: "orb-drift-1 18s ease-in-out infinite" }} />
       <div className="absolute rounded-full blur-3xl"
-        style={{ width: 350, height: 350, bottom: "-8%", right: "-6%",
-          background: "radial-gradient(circle, rgba(244,63,94,0.11) 0%, transparent 70%)",
-          animation: "orb-drift-2 20s ease-in-out infinite" }} />
+        style={{ width: 400, height: 400, bottom: "-12%", right: "-8%",
+          background: "radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 65%)",
+          animation: "orb-drift-2 24s ease-in-out infinite" }} />
     </div>
   );
 });
@@ -72,35 +72,35 @@ const GradientOrbs = memo(function GradientOrbs() {
 function RoundAnnouncement({ round, show }: { round: number; show: boolean }) {
   if (!show) return null;
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none"
+      style={{ background: "rgba(5,5,8,0.7)", backdropFilter: "blur(4px)" }}>
       <div className="round-announce text-center px-4">
-        <p className="font-black uppercase tracking-[0.5em] mb-2"
-          style={{ color: "#a855f7", fontSize: "clamp(0.7rem, 2vw, 1rem)", textShadow: "0 0 20px rgba(168,85,247,0.8)" }}>
-          ⚔ Fight!
+        <p className="font-semibold uppercase tracking-[0.5em] mb-3 text-xs"
+          style={{ color: "#a78bfa" }}>
+          Fight!
         </p>
         <p className="font-black text-white"
-          style={{ fontSize: "clamp(4rem, 18vw, 12rem)", lineHeight: 1,
-            textShadow: "0 0 60px rgba(168,85,247,0.7), 0 0 120px rgba(168,85,247,0.3)", letterSpacing: "-0.03em" }}>
-          ROUND {round}
+          style={{ fontSize: "clamp(4rem, 16vw, 11rem)", lineHeight: 1,
+            textShadow: "0 0 80px rgba(124,58,237,0.6)", letterSpacing: "-0.04em" }}>
+          Round {round}
         </p>
       </div>
     </div>
   );
 }
 
-/* ─── Thinking dots ─── */
+/* ─── Thinking indicator ─── */
 function ThinkingDots({ agentName }: { agentName: string }) {
   const f = getFighter(agentName);
   return (
-    <div className="flex items-center gap-2 sm:gap-3 px-4 py-3 rounded-xl"
-      style={{ background: f.dimBg, border: `1px solid ${f.borderColor}` }}>
-      <span className="text-lg">{f.emoji}</span>
-      <span className="text-sm font-bold" style={{ color: f.color }}>{agentName}</span>
-      <span className="text-zinc-500 text-sm">is thinking</span>
+    <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
+      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+      <span className="text-sm">{f.emoji}</span>
+      <span className="text-sm text-zinc-500">{agentName} is thinking</span>
       <div className="flex gap-1 ml-1">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: f.color, animation: `thinking-dot 1.2s ${i * 0.2}s ease-in-out infinite` }} />
+          <div key={i} className="w-1.5 h-1.5 rounded-full bg-zinc-600"
+            style={{ animation: `thinking-dot 1.2s ${i * 0.2}s ease-in-out infinite` }} />
         ))}
       </div>
     </div>
@@ -122,7 +122,7 @@ function TypewriterText({ text, speed = 18 }: { text: string; speed?: number }) 
     }, speed);
     return () => clearInterval(t);
   }, [text, speed]);
-  return <span>{displayed}{!done && <span className="opacity-70">▌</span>}</span>;
+  return <span>{displayed}{!done && <span className="text-zinc-700">▌</span>}</span>;
 }
 
 /* ─── Argument card ─── */
@@ -140,28 +140,36 @@ function ArgumentCard({
 }) {
   const f = getFighter(arg.agent);
   const [voted, setVoted] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   return (
-    <div className={`${side === "left" ? "slide-left" : "slide-right"} ${f.neonClass} rounded-2xl overflow-hidden`}
-      style={{ border: `1px solid ${f.borderColor}`, background: f.dimBg }}>
-
+    <div
+      className={`${side === "left" ? "slide-left" : "slide-right"} rounded-2xl overflow-hidden transition-all duration-300`}
+      style={{
+        background: hovered ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.025)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        transform: hovered ? "translateY(-1px)" : undefined,
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       {/* Card header */}
-      <div className="flex items-center justify-between px-4 sm:px-5 py-3"
-        style={{ borderBottom: `1px solid ${f.borderColor}`, background: f.dimBg }}>
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-sm sm:text-base flex-shrink-0"
-            style={{ border: `2px solid ${f.color}`, background: f.dimBg, boxShadow: `0 0 12px ${f.glow}` }}>
-            {f.emoji}
-          </div>
-          <div className="min-w-0">
-            <p className="font-black text-xs sm:text-sm tracking-wide text-white truncate">{arg.agent.toUpperCase()}</p>
-            <p className="text-[10px] sm:text-[11px] truncate" style={{ color: f.color }}>{f.tagline}</p>
-          </div>
+      <div className={`flex items-center gap-3 px-4 sm:px-5 py-3 ${side === "right" ? "flex-row-reverse" : ""}`}
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+
+        <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          {f.emoji}
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
-          <span className="text-[10px] font-black tracking-widest px-2 py-0.5 rounded"
-            style={{ background: `${f.color}22`, color: f.color, border: `1px solid ${f.borderColor}` }}>
+        <div className={`flex-1 min-w-0 ${side === "right" ? "text-right" : ""}`}>
+          <p className="font-bold text-sm text-white tracking-tight">{arg.agent}</p>
+          <p className="text-[11px] text-zinc-600">{f.tagline}</p>
+        </div>
+
+        <div className={`flex items-center gap-2 flex-shrink-0 ${side === "right" ? "flex-row-reverse" : ""}`}>
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+            style={{ background: "rgba(255,255,255,0.05)", color: "#52525b", border: "1px solid rgba(255,255,255,0.06)" }}>
             R{arg.round}
           </span>
 
@@ -169,25 +177,25 @@ function ArgumentCard({
             <button
               onClick={() => { onVote(arg.agent); setVoted(true); }}
               disabled={voteLoading}
-              className="text-[11px] font-black px-2 sm:px-3 py-1 rounded-full transition-all active:scale-90 disabled:opacity-40"
-              style={{ background: `${f.color}22`, color: f.color, border: `1px solid ${f.borderColor}` }}
-              onMouseEnter={(e) => (e.currentTarget.style.boxShadow = `0 0 14px ${f.glow}`)}
-              onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}>
-              👍 VOTE
+              className="text-[11px] font-medium px-3 py-1 rounded-full transition-all duration-200 disabled:opacity-30"
+              style={{ background: "rgba(255,255,255,0.04)", color: "#71717a", border: "1px solid rgba(255,255,255,0.07)" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = `${f.color}60`; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#71717a"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; }}>
+              Vote
             </button>
           )}
           {voted && (
-            <span className="count-pop text-[11px] font-black px-2 sm:px-3 py-1 rounded-full"
-              style={{ background: f.color, color: "#000" }}>
-              ✓ VOTED
+            <span className="count-pop text-[11px] font-semibold px-3 py-1 rounded-full"
+              style={{ background: f.dimBg, color: f.color, border: `1px solid ${f.borderColor}` }}>
+              ✓ Voted
             </span>
           )}
         </div>
       </div>
 
       {/* Content */}
-      <div className="px-4 sm:px-5 py-4">
-        <p className="text-zinc-200 leading-relaxed text-sm sm:text-[15px]">
+      <div className={`px-4 sm:px-5 py-4 ${side === "right" ? "text-right" : ""}`}>
+        <p className="text-zinc-300 leading-[1.7] text-[15px]">
           <TypewriterText text={arg.content} speed={16} />
         </p>
       </div>
@@ -198,10 +206,10 @@ function ArgumentCard({
 /* ─── Confetti ─── */
 function Confetti() {
   const pieces = useMemo(() =>
-    Array.from({ length: 70 }, (_, i) => ({
+    Array.from({ length: 60 }, (_, i) => ({
       id: i, x: Math.random() * 100,
       color: ["#a855f7","#ec4899","#f59e0b","#10b981","#3b82f6","#f43f5e","#fbbf24","#6366f1"][Math.floor(Math.random() * 8)],
-      size: Math.random() * 10 + 5, duration: Math.random() * 2.5 + 1.8, delay: Math.random() * 1.8,
+      size: Math.random() * 8 + 4, duration: Math.random() * 2.5 + 1.8, delay: Math.random() * 1.8,
       isRect: Math.random() > 0.4, rotate: Math.random() * 360,
     })), []
   );
@@ -232,7 +240,6 @@ export default function DebatePage() {
   const [error, setError] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
 
-  // Round announcement
   const [announcedRound, setAnnouncedRound] = useState(0);
   const [showRoundAnnounce, setShowRoundAnnounce] = useState(false);
   const [announceRoundNum, setAnnounceRoundNum] = useState(1);
@@ -244,7 +251,7 @@ export default function DebatePage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const streamStarted = useRef(false);
 
-  // Auto-scroll only when new arguments arrive
+  // Auto-scroll on new arguments
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [args.length]);
@@ -276,17 +283,14 @@ export default function DebatePage() {
       setTopic(data.topic);
       setAgents(data.agents);
     });
-
     es.addEventListener("argument", (e) => {
       const data = JSON.parse(e.data);
       setArgs((prev) => [...prev, data]);
     });
-
     es.addEventListener("summary", (e) => {
       const data = JSON.parse(e.data);
       setSummary(data.content);
     });
-
     es.addEventListener("done", () => { setStatus("done"); es.close(); });
     es.onerror = () => { setError("Stream disconnected."); setStatus("error"); es.close(); };
 
@@ -305,7 +309,7 @@ export default function DebatePage() {
       if (!res.ok) throw new Error("Vote failed");
       setVotedFor(winnerAgent);
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3000);
+      setTimeout(() => setShowConfetti(false), 3500);
     } catch {
       // silently ignore
     } finally {
@@ -344,122 +348,106 @@ export default function DebatePage() {
   }, [args]);
 
   return (
-    <div className="scanlines min-h-screen flex flex-col relative" style={{ background: "#08080d" }}>
+    <div className="min-h-screen flex flex-col relative" style={{ background: "#050508" }}>
       <Particles />
       <GradientOrbs />
-
-      {/* Scanline sweep */}
-      <div className="fixed left-0 right-0 h-12 pointer-events-none z-10"
-        style={{ background: "linear-gradient(transparent, rgba(255,255,255,0.012), transparent)",
-          animation: "scanline-sweep 12s linear infinite" }} />
 
       {/* Overlays */}
       <RoundAnnouncement round={announceRoundNum} show={showRoundAnnounce} />
       {showConfetti && <Confetti />}
 
       {/* ── HEADER ── */}
-      <header className="sticky top-0 z-20 backdrop-blur-md"
-          style={{ borderBottom: "1px solid rgba(168,85,247,0.15)", background: "rgba(8,8,13,0.93)" }}>
-          <div className="mx-auto flex max-w-4xl items-center justify-between px-3 sm:px-4 py-2.5">
+      <header className="sticky top-0 z-20 backdrop-blur-xl"
+        style={{ height: 52, borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(5,5,8,0.9)" }}>
+        <div className="mx-auto flex max-w-4xl items-center justify-between h-full px-4">
 
-            <button onClick={() => router.push("/")}
-              className="text-xs font-bold tracking-widest uppercase transition-all flex-shrink-0"
-              style={{ color: "#6b7280" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#a855f7")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#6b7280")}>
-              <span className="hidden sm:inline">← New Debate</span>
-              <span className="sm:hidden">←</span>
+          <button onClick={() => router.push("/")}
+            className="text-sm font-medium transition-colors duration-200 flex-shrink-0"
+            style={{ color: "#52525b" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#e4e4e7")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#52525b")}>
+            <span className="hidden sm:inline">← Arena</span>
+            <span className="sm:hidden">←</span>
+          </button>
+
+          {/* Topic in header */}
+          <div className="flex-1 min-w-0 px-4 text-center">
+            {topic && (
+              <p className="text-sm font-medium text-zinc-400 truncate">{topic}</p>
+            )}
+          </div>
+
+          {/* Right: share + status */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <button onClick={copyShareLink}
+              className="text-xs font-medium px-2.5 py-1 rounded-lg transition-all duration-200"
+              style={{ background: "rgba(255,255,255,0.04)", color: copied ? "#10b981" : "#52525b",
+                border: "1px solid rgba(255,255,255,0.07)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#e4e4e7")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = copied ? "#10b981" : "#52525b")}>
+              {copied ? "✓ Copied" : "Share"}
             </button>
 
-            <span className="font-black text-xs sm:text-sm tracking-widest uppercase"
-              style={{ color: "#a855f7", textShadow: "0 0 20px rgba(168,85,247,0.5)" }}>
-              ⚔ DEBATE ARENA
-            </span>
-
-            {/* Right side: share + status */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-              {/* Share button */}
-              <button onClick={copyShareLink}
-                className="text-[11px] font-black px-2 py-1 sm:px-2.5 rounded-lg tracking-wide uppercase transition-all"
-                style={{ background: "rgba(168,85,247,0.12)", color: copied ? "#10b981" : "#a855f7",
-                  border: "1px solid rgba(168,85,247,0.25)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 0 12px rgba(168,85,247,0.4)")}
-                onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}>
-                {copied ? "✓" : "📡"}
-                <span className="hidden sm:inline ml-1">{copied ? "Copied!" : "Share"}</span>
-              </button>
-
-              {status === "streaming" && (
-                <div className="flex items-center gap-1 sm:gap-1.5">
-                  <div className="live-dot w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full" style={{ backgroundColor: "#ef4444" }} />
-                  <span className="text-[10px] sm:text-xs font-bold text-red-400 tracking-widest uppercase">
-                    <span className="hidden sm:inline">LIVE · </span>R{currentRound || "—"}/3
-                  </span>
-                </div>
-              )}
-              {status === "done" && (
-                <span className="text-[10px] sm:text-xs font-bold tracking-widest uppercase text-emerald-400">✓ DONE</span>
-              )}
-              {status === "error" && (
-                <span className="text-[10px] sm:text-xs font-bold text-rose-400">ERR</span>
-              )}
-            </div>
+            {status === "streaming" && (
+              <div className="flex items-center gap-1.5">
+                <div className="live-dot w-2 h-2 rounded-full" style={{ backgroundColor: "#ef4444" }} />
+                <span className="text-[10px] sm:text-xs font-medium text-red-500 tracking-wide uppercase">
+                  R{currentRound || "–"}/3
+                </span>
+              </div>
+            )}
+            {status === "done" && (
+              <span className="text-[10px] sm:text-xs font-medium text-emerald-500 tracking-wide uppercase">Complete</span>
+            )}
+            {status === "error" && (
+              <span className="text-[10px] sm:text-xs font-medium text-rose-500">Error</span>
+            )}
           </div>
-        </header>
+        </div>
+      </header>
 
       {/* ── MAIN CONTENT ── */}
       <main className="relative z-10 mx-auto w-full max-w-4xl flex-1 px-3 sm:px-4 py-6 sm:py-8 flex flex-col gap-4 sm:gap-6 overflow-x-hidden">
 
-        {/* Topic */}
-        {topic && (
-          <div className="animate-fade-in rounded-2xl px-4 sm:px-6 py-4 sm:py-5 neon-purple"
-            style={{ border: "1px solid rgba(168,85,247,0.3)", background: "rgba(168,85,247,0.06)" }}>
-            <p className="text-[10px] font-black tracking-[0.4em] uppercase text-purple-400 mb-2">▶ Debate Topic</p>
-            <h1 className="text-lg sm:text-2xl font-black text-white leading-snug"
-              style={{ textShadow: "0 0 30px rgba(168,85,247,0.3)" }}>
-              &ldquo;{topic}&rdquo;
-            </h1>
-            {agents.length === 2 && (
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-3 sm:mt-4">
-                {agents.map((a, i) => {
-                  const f = getFighter(a);
-                  return (
-                    <div key={a} className="flex items-center gap-2">
-                      {i > 0 && <span className="text-zinc-600 font-black text-sm">VS</span>}
-                      <span className="text-xs font-black px-3 py-1 rounded-full"
-                        style={{ background: f.dimBg, color: f.color, border: `1px solid ${f.borderColor}` }}>
-                        {f.emoji} {a.toUpperCase()}
-                      </span>
-                    </div>
-                  );
-                })}
-                <span className="text-zinc-600 text-xs">· 3 ROUNDS</span>
-              </div>
-            )}
+        {/* Agent matchup (shown once topic loads) */}
+        {agents.length === 2 && (
+          <div className="fade-up flex items-center justify-center gap-3 py-2">
+            {agents.map((a, i) => {
+              const f = getFighter(a);
+              return (
+                <div key={a} className="flex items-center gap-3">
+                  {i > 0 && (
+                    <span className="text-zinc-700 font-bold text-sm">vs</span>
+                  )}
+                  <span className="flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-full"
+                    style={{ background: f.dimBg, color: f.color, border: `1px solid ${f.borderColor}` }}>
+                    {f.emoji} {a}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
 
         {/* Initial loading */}
         {status === "streaming" && args.length === 0 && (
-          <div className="flex flex-col items-center gap-4 py-20">
-            <div className="w-10 h-10 rounded-full border-2 animate-spin"
-              style={{ borderColor: "rgba(168,85,247,0.2)", borderTopColor: "#a855f7" }} />
-            <p className="text-sm font-bold tracking-widest uppercase" style={{ color: "#a855f7" }}>
-              Initializing Debate…
-            </p>
+          <div className="flex flex-col items-center gap-3 py-24">
+            <div className="w-8 h-8 rounded-full border-2 animate-spin"
+              style={{ borderColor: "rgba(124,58,237,0.15)", borderTopColor: "#7c3aed" }} />
+            <p className="text-sm text-zinc-600">Initializing debate…</p>
           </div>
         )}
 
         {/* Rounds */}
         {roundGroups.map((group, ri) => (
           <div key={ri} className="flex flex-col gap-3 sm:gap-4">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="flex-1 h-px" style={{ background: "rgba(168,85,247,0.2)" }} />
-              <span className="text-[10px] sm:text-[11px] font-black tracking-[0.3em] sm:tracking-[0.4em] uppercase px-3 py-1 rounded-full"
-                style={{ color: "#a855f7", border: "1px solid rgba(168,85,247,0.3)", background: "rgba(168,85,247,0.08)" }}>
-                ROUND {ri + 1}
+            {/* Round divider */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.05)" }} />
+              <span className="text-[10px] font-medium tracking-widest uppercase text-zinc-700">
+                Round {ri + 1}
               </span>
-              <div className="flex-1 h-px" style={{ background: "rgba(168,85,247,0.2)" }} />
+              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.05)" }} />
             </div>
 
             {group.map((arg) => {
@@ -483,41 +471,41 @@ export default function DebatePage() {
           <ThinkingDots agentName={nextSpeaker} />
         )}
 
-        {/* Summary */}
+        {/* Moderator summary */}
         {summary && (
-          <div className="animate-fade-in rounded-2xl overflow-hidden"
-            style={{ border: "1px solid rgba(251,191,36,0.4)", background: "rgba(251,191,36,0.05)" }}>
-            <div className="px-4 sm:px-5 py-3 flex items-center gap-2"
-              style={{ borderBottom: "1px solid rgba(251,191,36,0.3)", background: "rgba(251,191,36,0.06)" }}>
-              <span className="text-xl" style={{ animation: "float-slow 3s ease-in-out infinite" }}>👑</span>
+          <div className="fade-up rounded-2xl overflow-hidden"
+            style={{ border: "1px solid rgba(251,191,36,0.2)", background: "rgba(251,191,36,0.04)" }}>
+            <div className="px-4 sm:px-5 py-3 flex items-center gap-2.5"
+              style={{ borderBottom: "1px solid rgba(251,191,36,0.1)" }}>
+              <span className="text-lg">👑</span>
               <div>
-                <p className="text-[10px] font-black tracking-[0.4em] uppercase text-amber-400">Final Verdict</p>
-                <p className="text-xs text-amber-500/60">Moderator Summary</p>
+                <p className="text-[10px] font-semibold tracking-widest uppercase text-amber-600">Final Verdict</p>
+                <p className="text-xs text-zinc-600">Moderator Summary</p>
               </div>
             </div>
             <div className="px-4 sm:px-5 py-4 sm:py-5">
-              <p className="text-zinc-200 leading-relaxed text-sm sm:text-[15px]">
-                <TypewriterText text={summary} speed={22} />
+              <p className="text-zinc-300 leading-[1.7] text-[15px]">
+                <TypewriterText text={summary} speed={20} />
               </p>
             </div>
           </div>
         )}
 
-        {/* Final vote prompt — only if user hasn't voted yet */}
+        {/* Final vote prompt */}
         {status === "done" && votedFor === null && agents.length === 2 && (
-          <div className="animate-fade-in rounded-2xl px-4 sm:px-5 py-5 sm:py-6 text-center"
-            style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}>
-            <p className="font-black text-white text-sm tracking-widest uppercase mb-1">⚔ Who Won?</p>
-            <p className="text-zinc-500 text-xs mb-4 sm:mb-5">Vote on any argument card above, or pick an overall winner</p>
-            <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
+          <div className="fade-up rounded-2xl px-4 sm:px-6 py-5 sm:py-6 text-center"
+            style={{ border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.02)" }}>
+            <p className="font-semibold text-white text-sm mb-1">Who won the debate?</p>
+            <p className="text-zinc-600 text-xs mb-5">Vote on individual cards above, or pick an overall winner</p>
+            <div className="flex items-center justify-center gap-3 flex-wrap">
               {agents.map((a) => {
                 const f = getFighter(a);
                 return (
                   <button key={a} onClick={() => castVote(a)} disabled={voteLoading}
-                    className="flex items-center gap-2 rounded-xl px-4 sm:px-6 py-2.5 sm:py-3 text-sm font-black tracking-wide uppercase transition-all active:scale-95 disabled:opacity-40"
-                    style={{ background: f.dimBg, color: f.color, border: `1px solid ${f.borderColor}` }}
-                    onMouseEnter={(e) => (e.currentTarget.style.boxShadow = `0 0 20px ${f.glow}`)}
-                    onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}>
+                    className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-200 active:scale-95 disabled:opacity-30"
+                    style={{ background: "rgba(255,255,255,0.04)", color: "#71717a", border: "1px solid rgba(255,255,255,0.08)" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = f.color; e.currentTarget.style.background = f.dimBg; e.currentTarget.style.borderColor = f.borderColor; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = "#71717a"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}>
                     {f.emoji} {a}
                   </button>
                 );
@@ -526,35 +514,34 @@ export default function DebatePage() {
           </div>
         )}
 
-        {/* Post-vote confirmation */}
+        {/* Post-vote */}
         {votedFor !== null && (
-          <div className="animate-fade-in rounded-2xl px-4 sm:px-5 py-4 text-center"
-            style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}>
-            <p className="text-zinc-400 text-sm">
+          <div className="fade-up rounded-2xl px-4 sm:px-5 py-4 text-center"
+            style={{ border: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.02)" }}>
+            <p className="text-sm text-zinc-400">
               You voted for{" "}
-              <span className="font-black" style={{ color: getFighter(votedFor).color }}>
+              <span className="font-semibold" style={{ color: getFighter(votedFor).color }}>
                 {getFighter(votedFor).emoji} {votedFor}
               </span>
-              . Thanks for voting!
             </p>
           </div>
         )}
 
         {error && (
-          <div className="rounded-xl px-4 py-3 text-rose-400 text-sm"
-            style={{ border: "1px solid rgba(244,63,94,0.3)", background: "rgba(244,63,94,0.05)" }}>
-            ⚠ {error}
+          <div className="rounded-xl px-4 py-3 text-rose-500 text-sm"
+            style={{ border: "1px solid rgba(244,63,94,0.2)", background: "rgba(244,63,94,0.04)" }}>
+            {error}
           </div>
         )}
 
         {status === "done" && (
           <div className="flex justify-center pt-2 pb-8">
             <button onClick={() => router.push("/")}
-              className="px-6 sm:px-8 py-3 rounded-xl text-sm font-black tracking-widest uppercase transition-all active:scale-95"
-              style={{ background: "rgba(168,85,247,0.1)", color: "#a855f7", border: "1px solid rgba(168,85,247,0.3)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 0 20px rgba(168,85,247,0.4)")}
-              onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}>
-              ⚡ Start a New Debate
+              className="text-sm font-medium transition-colors duration-200"
+              style={{ color: "#52525b" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#e4e4e7")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#52525b")}>
+              Start a new debate →
             </button>
           </div>
         )}
