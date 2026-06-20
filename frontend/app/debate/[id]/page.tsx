@@ -53,23 +53,6 @@ function RoundOverlay({ round, show }: { round: number; show: boolean }) {
   );
 }
 
-function TypewriterText({ text, speed = 14 }: { text: string; speed?: number }) {
-  const [displayed, setDisplayed] = useState("");
-  const [done, setDone] = useState(false);
-  useEffect(() => {
-    setDisplayed(""); setDone(false);
-    if (!text) return;
-    let i = 0;
-    const t = setInterval(() => {
-      i++;
-      setDisplayed(text.slice(0, i));
-      if (i >= text.length) { clearInterval(t); setDone(true); }
-    }, speed);
-    return () => clearInterval(t);
-  }, [text, speed]);
-  return <span>{displayed}{!done && <span className="opacity-30">▌</span>}</span>;
-}
-
 interface ArgData { argument_id: string; agent: string; round: number; content: string; }
 
 function ArgCard({ arg, side, canVote, onVote, voteLoading }: {
@@ -80,20 +63,20 @@ function ArgCard({ arg, side, canVote, onVote, voteLoading }: {
 
   return (
     <div className={`${side === "left" ? "slide-left" : "slide-right"} rounded-2xl overflow-hidden transition-all duration-300 max-w-full`}
-      style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)" }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
-      onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.025)")}>
+      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.09)")}
+      onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}>
 
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0"
             style={{ background: f.dimBg, border: `1px solid ${f.border}` }}>
             {f.emoji}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-white leading-none">{arg.agent}</p>
+            <p className="text-sm font-semibold leading-none" style={{ color: "#ffffff" }}>{arg.agent}</p>
             <p className="text-[11px] mt-0.5 truncate" style={{ color: f.color }}>{f.tagline}</p>
           </div>
         </div>
@@ -120,8 +103,8 @@ function ArgCard({ arg, side, canVote, onVote, voteLoading }: {
 
       {/* Body */}
       <div className="px-4 py-4">
-        <p className="text-zinc-300 text-[15px] leading-[1.75]">
-          <TypewriterText text={arg.content} speed={14} />
+        <p style={{ color: "#e4e4e7", fontSize: "15px", lineHeight: "1.75" }}>
+          {arg.content}
         </p>
       </div>
     </div>
@@ -372,8 +355,8 @@ export default function DebatePage() {
               </div>
             </div>
             <div className="px-4 py-4">
-              <p className="text-zinc-300 text-[15px] leading-[1.75]">
-                <TypewriterText text={summary} speed={20} />
+              <p style={{ color: "#e4e4e7", fontSize: "15px", lineHeight: "1.75" }}>
+                {summary}
               </p>
             </div>
           </div>

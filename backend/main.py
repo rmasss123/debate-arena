@@ -1,9 +1,12 @@
 import asyncio
 import json
+import logging
 import os
 
 from dotenv import load_dotenv
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -57,50 +60,72 @@ async def stream_debate(debate_id: str):
             "data": json.dumps({"debate_id": debate_id, "topic": topic, "agents": debate_agents}),
         }
 
+        loop = asyncio.get_running_loop()
+
         for round_num in range(1, ROUNDS + 1):
+            logging.info(f"Starting round {round_num}")
             for agent_name in debate_agents:
-                # Fetch latest vote feedback to adapt style
-                vote_feedback = database.get_vote_feedback(debate_id)
+                try:
+                    # Fetch latest vote feedback to adapt style
+                    vote_feedback = database.get_vote_feedback(debate_id)
 
-                # Run blocking Groq call in thread pool to avoid blocking event loop
-                content = await asyncio.get_event_loop().run_in_executor(
-                    None,
-                    lambda a=agent_name, r=round_num, vf=vote_feedback: agents.generate_argument(
-                        a, topic, r, all_arguments, vf
-                    ),
-                )
-
-                # Score the argument and save to DB concurrently
-                impact_score, saved = await asyncio.gather(
-                    asyncio.get_event_loop().run_in_executor(
+                    # Run blocking Groq call in thread pool to avoid blocking event loop
+                    logging.info(f"Generating argument: {agent_name} round {round_num}")
+                    content = await loop.run_in_executor(
                         None,
-                        lambda c=content, t=topic: agents.score_argument(c, t),
-                    ),
-                    asyncio.get_event_loop().run_in_executor(
-                        None,
-                        lambda: database.save_argument(debate_id, agent_name, content, round_num),
-                    ),
-                )
+                        lambda a=agent_name, r=round_num, vf=vote_feedback: agents.generate_argument(
+                            a, topic, r, all_arguments, vf
+                        ),
+                    )
+                    logging.info(f"Got argument from {agent_name} ({len(content)} chars)")
 
-                all_arguments.append(saved)
+                    # Score the argument and save to DB concurrently
+                    impact_score, saved = await asyncio.gather(
+                        loop.run_in_executor(
+                            None,
+                            lambda c=content, t=topic: agents.score_argument(c, t),
+                        ),
+                        loop.run_in_executor(
+                            None,
+                            lambda: database.save_argument(debate_id, agent_name, content, round_num),
+                        ),
+                    )
 
-                yield {
-                    "event": "argument",
-                    "data": json.dumps(
-                        {
-                            "agent": agent_name,
-                            "round": round_num,
-                            "content": content,
-                            "argument_id": saved["id"],
-                            "impact_score": impact_score,
-                        }
-                    ),
-                }
+                    all_arguments.append(saved)
+
+                    yield {
+                        "event": "argument",
+                        "data": json.dumps(
+                            {
+                                "agent": agent_name,
+                                "round": round_num,
+                                "content": content,
+                                "argument_id": saved["id"],
+                                "impact_score": impact_score,
+                            }
+                        ),
+                    }
+
+                except Exception as e:
+                    logging.error(f"Error in round {round_num} for {agent_name}: {e}", exc_info=True)
+                    yield {
+                        "event": "argument",
+                        "data": json.dumps(
+                            {
+                                "agent": agent_name,
+                                "round": round_num,
+                                "content": f"[{agent_name} encountered an error: {e}]",
+                                "argument_id": f"error-{round_num}-{agent_name}",
+                                "impact_score": 0,
+                            }
+                        ),
+                    }
 
                 await asyncio.sleep(PAUSE_BETWEEN_ARGS)
 
         # Moderator summary
-        summary = await asyncio.get_event_loop().run_in_executor(
+        logging.info("Generating moderator summary")
+        summary = await loop.run_in_executor(
             None,
             lambda: agents.generate_moderator_summary(topic, all_arguments),
         )
