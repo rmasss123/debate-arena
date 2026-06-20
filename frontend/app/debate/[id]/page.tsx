@@ -88,149 +88,6 @@ function RoundAnnouncement({ round, show }: { round: number; show: boolean }) {
   );
 }
 
-/* ─── KO overlay ─── */
-function KOOverlay({ agent }: { agent: string }) {
-  const f = getFighter(agent);
-  return (
-    <>
-      {/* Screen flash */}
-      <div className="fixed inset-0 z-50 pointer-events-none ko-flash"
-        style={{ background: f.color }} />
-      {/* KO text */}
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none">
-        <div className="ko-slam text-center">
-          <p className="font-black leading-none select-none"
-            style={{ fontSize: "clamp(6rem, 22vw, 16rem)", color: "#ef4444",
-              textShadow: "0 0 60px rgba(239,68,68,0.9), 0 0 120px rgba(239,68,68,0.5)", letterSpacing: "-0.04em" }}>
-            K.O.!
-          </p>
-          <p className="font-black text-white tracking-widest uppercase mt-2"
-            style={{ fontSize: "clamp(1rem, 3vw, 2rem)", textShadow: `0 0 20px ${f.glow}` }}>
-            {f.emoji} {agent} Defeated
-          </p>
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* ─── Health bar HUD ─── */
-function getHpColor(hp: number) {
-  return hp > 60 ? "#10b981" : hp > 30 ? "#f59e0b" : "#ef4444";
-}
-function getHpGlow(hp: number) {
-  return hp > 60 ? "rgba(16,185,129,0.7)" : hp > 30 ? "rgba(245,158,11,0.6)" : "rgba(239,68,68,0.8)";
-}
-
-function HealthHUD({
-  agents, hp, hitAgent, currentRound,
-}: {
-  agents: string[]; hp: Record<string, number>; hitAgent: string | null; currentRound: number;
-}) {
-  if (agents.length < 2) return null;
-  const [a, b] = agents;
-  const hpA = hp[a] ?? 100;
-  const hpB = hp[b] ?? 100;
-  const fA = getFighter(a);
-  const fB = getFighter(b);
-
-  return (
-    <div className="backdrop-blur-md py-2.5 px-4"
-      style={{ borderBottom: "1px solid rgba(168,85,247,0.12)", background: "rgba(8,8,13,0.95)" }}>
-      <div className="mx-auto max-w-4xl grid grid-cols-[1fr_72px_1fr] gap-3 items-center">
-
-        {/* Agent A — bar grows left→right */}
-        <div className={`flex flex-col gap-1 ${hitAgent === a ? "hp-hit" : ""}`}>
-          <div className="flex items-center justify-between gap-1">
-            <div className="flex items-center gap-1.5">
-              <span className="text-base leading-none">{fA.emoji}</span>
-              <span className="text-[11px] font-black text-white tracking-wide">{a.toUpperCase()}</span>
-            </div>
-            <span className="text-[11px] font-black tabular-nums" style={{ color: getHpColor(hpA) }}>
-              {hpA} HP
-            </span>
-          </div>
-          <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.07)" }}>
-            <div className="h-full rounded-full transition-all duration-700 ease-out"
-              style={{
-                width: `${hpA}%`,
-                background: `linear-gradient(90deg, ${getHpColor(hpA)}aa, ${getHpColor(hpA)})`,
-                boxShadow: hpA <= 30 ? `0 0 10px ${getHpGlow(hpA)}, 0 0 20px ${getHpGlow(hpA)}` : `0 0 6px ${getHpGlow(hpA)}`,
-              }} />
-          </div>
-        </div>
-
-        {/* Center */}
-        <div className="flex flex-col items-center gap-0">
-          <span className="text-[9px] font-black tracking-widest uppercase text-purple-500">Round</span>
-          <span className="font-black text-white text-base leading-tight">{currentRound || "—"}/3</span>
-          <span className="text-[9px] font-black text-purple-500 vs-flash">VS</span>
-        </div>
-
-        {/* Agent B — bar grows right→left */}
-        <div className={`flex flex-col gap-1 ${hitAgent === b ? "hp-hit" : ""}`}>
-          <div className="flex items-center justify-between gap-1">
-            <span className="text-[11px] font-black tabular-nums" style={{ color: getHpColor(hpB) }}>
-              {hpB} HP
-            </span>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-black text-white tracking-wide">{b.toUpperCase()}</span>
-              <span className="text-base leading-none">{fB.emoji}</span>
-            </div>
-          </div>
-          <div className="h-3 rounded-full overflow-hidden flex justify-end" style={{ background: "rgba(255,255,255,0.07)" }}>
-            <div className="h-full rounded-full transition-all duration-700 ease-out"
-              style={{
-                width: `${hpB}%`,
-                background: `linear-gradient(270deg, ${getHpColor(hpB)}aa, ${getHpColor(hpB)})`,
-                boxShadow: hpB <= 30 ? `0 0 10px ${getHpGlow(hpB)}, 0 0 20px ${getHpGlow(hpB)}` : `0 0 6px ${getHpGlow(hpB)}`,
-              }} />
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-}
-
-/* ─── Impact score badge ─── */
-function ImpactScoreBadge({ score }: { score: number }) {
-  const [displayed, setDisplayed] = useState(0);
-
-  useEffect(() => {
-    if (!score) return;
-    let current = 0;
-    const inc = score / 20;
-    const t = setInterval(() => {
-      current = Math.min(current + inc, score);
-      setDisplayed(Math.round(current));
-      if (current >= score) clearInterval(t);
-    }, 40);
-    return () => clearInterval(t);
-  }, [score]);
-
-  const isStrong = score >= 8;
-  const isMid = score >= 5;
-  const color = isStrong ? "#10b981" : isMid ? "#f59e0b" : "#f43f5e";
-  const label = isStrong ? "ELITE" : isMid ? "SOLID" : "WEAK";
-
-  return (
-    <div className="flex flex-col items-center justify-center px-2 py-1 rounded-lg"
-      style={{
-        background: `${color}18`, border: `1px solid ${color}44`, minWidth: 40,
-        boxShadow: isStrong ? `0 0 12px ${color}66, 0 0 24px ${color}33` : "none",
-      }}>
-      <span className="font-black text-lg leading-none"
-        style={{ color, textShadow: isStrong ? `0 0 8px ${color}` : "none" }}>
-        {displayed}
-      </span>
-      <span className="text-[9px] font-black tracking-widest uppercase" style={{ color: `${color}99` }}>
-        {label}
-      </span>
-    </div>
-  );
-}
-
 /* ─── Thinking dots ─── */
 function ThinkingDots({ agentName }: { agentName: string }) {
   const f = getFighter(agentName);
@@ -274,7 +131,6 @@ interface ArgData {
   agent: string;
   round: number;
   content: string;
-  impact_score?: number;
 }
 
 function ArgumentCard({
@@ -304,9 +160,6 @@ function ArgumentCard({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Impact score */}
-          {arg.impact_score !== undefined && <ImpactScoreBadge score={arg.impact_score} />}
-
           <span className="text-[10px] font-black tracking-widest px-2 py-0.5 rounded"
             style={{ background: `${f.color}22`, color: f.color, border: `1px solid ${f.borderColor}` }}>
             R{arg.round}
@@ -379,18 +232,11 @@ export default function DebatePage() {
   const [error, setError] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
 
-  // Health bars
-  const [hp, setHp] = useState<Record<string, number>>({});
-  const [hitAgent, setHitAgent] = useState<string | null>(null);
-  const [koAgent, setKoAgent] = useState<string | null>(null);
-
   // Round announcement
   const [announcedRound, setAnnouncedRound] = useState(0);
   const [showRoundAnnounce, setShowRoundAnnounce] = useState(false);
   const [announceRoundNum, setAnnounceRoundNum] = useState(1);
 
-  // Spectator count (simulated)
-  const [spectators, setSpectators] = useState(() => Math.floor(Math.random() * 6) + 4);
   const [copied, setCopied] = useState(false);
 
   // Total votes cast (for showing final prompt)
@@ -403,21 +249,6 @@ export default function DebatePage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [args, summary]);
-
-  // Simulated spectator growth
-  useEffect(() => {
-    const t = setInterval(() => {
-      setSpectators((prev) => prev + Math.floor(Math.random() * 3) + 1);
-    }, 10000);
-    return () => clearInterval(t);
-  }, []);
-
-  // Init HP when agents load
-  useEffect(() => {
-    if (agents.length === 2 && Object.keys(hp).length === 0) {
-      setHp({ [agents[0]]: 100, [agents[1]]: 100 });
-    }
-  }, [agents, hp]);
 
   // Detect new rounds
   useEffect(() => {
@@ -460,22 +291,6 @@ export default function DebatePage() {
     return () => es.close();
   }, [id]);
 
-  // Damage + confetti
-  function applyDamage(loserAgent: string) {
-    setHp((prev) => {
-      const current = prev[loserAgent] ?? 100;
-      const next = Math.max(0, current - 15);
-      if (next <= 0 && !koAgent) {
-        setKoAgent(loserAgent);
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 4000);
-      }
-      return { ...prev, [loserAgent]: next };
-    });
-    setHitAgent(loserAgent);
-    setTimeout(() => setHitAgent(null), 600);
-  }
-
   async function castVote(winnerAgent: string) {
     if (voteLoading) return;
     setVoteLoading(true);
@@ -486,15 +301,9 @@ export default function DebatePage() {
         body: JSON.stringify({ debate_id: id, winner_agent: winnerAgent }),
       });
       if (!res.ok) throw new Error("Vote failed");
-      const loser = agents.find((a) => a !== winnerAgent);
-      if (loser) applyDamage(loser);
       setTotalVotes((v) => v + 1);
-
-      // Confetti on first vote if no KO
-      if (!koAgent && (hp[loser ?? ""] ?? 100) - 15 > 0) {
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 3000);
-      }
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
     } catch {
       // silently ignore
     } finally {
@@ -541,12 +350,10 @@ export default function DebatePage() {
 
       {/* Overlays */}
       <RoundAnnouncement round={announceRoundNum} show={showRoundAnnounce} />
-      {koAgent && <KOOverlay agent={koAgent} />}
       {showConfetti && <Confetti />}
 
-      {/* ── STICKY TOP BLOCK (header + HP HUD) ── */}
-      <div className="sticky top-0 z-20">
-        <header className="backdrop-blur-md"
+      {/* ── HEADER ── */}
+      <header className="sticky top-0 z-20 backdrop-blur-md"
           style={{ borderBottom: "1px solid rgba(168,85,247,0.15)", background: "rgba(8,8,13,0.93)" }}>
           <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-2.5">
 
@@ -563,16 +370,8 @@ export default function DebatePage() {
               ⚔ DEBATE ARENA
             </span>
 
-            {/* Right side: spectators + share + status */}
+            {/* Right side: share + status */}
             <div className="flex items-center gap-3">
-              {/* Spectator count */}
-              <div className="flex items-center gap-1.5">
-                <div className="live-dot w-2 h-2 rounded-full" style={{ backgroundColor: "#ef4444" }} />
-                <span className="text-[11px] font-bold text-zinc-400 tabular-nums">
-                  {spectators} watching
-                </span>
-              </div>
-
               {/* Share button */}
               <button onClick={copyShareLink}
                 className="text-[11px] font-black px-2.5 py-1 rounded-lg tracking-wide uppercase transition-all"
@@ -600,10 +399,6 @@ export default function DebatePage() {
             </div>
           </div>
         </header>
-
-        {/* HP HUD */}
-        <HealthHUD agents={agents} hp={hp} hitAgent={hitAgent} currentRound={currentRound} />
-      </div>
 
       {/* ── MAIN CONTENT ── */}
       <main className="relative z-10 mx-auto w-full max-w-4xl flex-1 px-4 py-8 flex flex-col gap-6">
@@ -730,11 +525,7 @@ export default function DebatePage() {
             style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}>
             <p className="text-zinc-400 text-sm">
               <span className="font-black text-white">{totalVotes}</span> vote{totalVotes !== 1 ? "s" : ""} cast.{" "}
-              {koAgent ? (
-                <span className="font-black text-rose-400">{koAgent} has been defeated! 💀</span>
-              ) : (
-                <span className="text-zinc-400">Keep voting on argument cards above.</span>
-              )}
+              <span className="text-zinc-400">Keep voting on argument cards above.</span>
             </p>
           </div>
         )}
