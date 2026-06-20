@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
@@ -32,22 +32,25 @@ const FIGHTERS = [
   },
 ] as const;
 
+function visualValue(index: number, salt: number) {
+  return ((index * 137 + salt * 271) % 997) / 997;
+}
+
+const HOME_PARTICLES = Array.from({ length: 12 }, (_, i) => ({
+  id: i,
+  x: visualValue(i, 1) * 100,
+  size: visualValue(i, 2) * 1.5 + 0.5,
+  duration: visualValue(i, 3) * 20 + 15,
+  delay: visualValue(i, 4) * 15,
+  drift: (visualValue(i, 5) - 0.5) * 80,
+  opacity: visualValue(i, 6) * 0.2 + 0.05,
+  color: ["#7c3aed", "#6d28d9", "#4f46e5"][Math.floor(visualValue(i, 7) * 3)],
+}));
+
 const Particles = React.memo(function Particles() {
-  const particles = useMemo(() =>
-    Array.from({ length: 12 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      size: Math.random() * 1.5 + 0.5,
-      duration: Math.random() * 20 + 15,
-      delay: Math.random() * 15,
-      drift: (Math.random() - 0.5) * 80,
-      opacity: Math.random() * 0.2 + 0.05,
-      color: ["#7c3aed", "#6d28d9", "#4f46e5"][Math.floor(Math.random() * 3)],
-    })), []
-  );
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden>
-      {particles.map((p) => (
+      {HOME_PARTICLES.map((p) => (
         <div key={p.id} className="absolute bottom-0 rounded-full"
           style={{
             left: `${p.x}%`, width: p.size, height: p.size,
@@ -67,9 +70,6 @@ export default function Home() {
   const [agentB, setAgentB] = useState("Critic");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => { setMounted(true); }, []);
 
   async function handleStart() {
     if (!topic.trim() || loading) return;
@@ -96,13 +96,13 @@ export default function Home() {
 
       {/* Gradient orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden>
-        <div className="absolute rounded-full blur-[120px]"
-          style={{ width: 600, height: 600, top: "-20%", left: "-15%",
-            background: "radial-gradient(circle, rgba(109,40,217,0.12) 0%, transparent 70%)",
+        <div className="absolute rounded-full"
+          style={{ width: 700, height: 700, top: "-25%", left: "-20%", filter: "blur(80px)",
+            background: "radial-gradient(circle, rgba(109,40,217,0.08) 0%, transparent 60%)",
             animation: "orbDrift1 18s ease-in-out infinite" }} />
-        <div className="absolute rounded-full blur-[100px]"
-          style={{ width: 400, height: 400, bottom: "-10%", right: "-10%",
-            background: "radial-gradient(circle, rgba(67,56,202,0.10) 0%, transparent 70%)",
+        <div className="absolute rounded-full"
+          style={{ width: 500, height: 500, bottom: "-15%", right: "-15%", filter: "blur(80px)",
+            background: "radial-gradient(circle, rgba(67,56,202,0.06) 0%, transparent 60%)",
             animation: "orbDrift2 24s ease-in-out infinite" }} />
       </div>
 
@@ -110,7 +110,7 @@ export default function Home() {
         <div className="w-full max-w-2xl flex flex-col gap-10 sm:gap-12">
 
           {/* Title */}
-          <div className={`text-center flex flex-col gap-4 transition-opacity duration-700 ${mounted ? "opacity-100" : "opacity-0"}`}>
+          <div className="text-center flex flex-col gap-4" style={{ animation: "fadeIn 0.7s ease both" }}>
             <div className="inline-flex items-center justify-center gap-2 mx-auto mb-2">
               <span className="text-[10px] font-semibold tracking-[0.3em] uppercase text-purple-500/70">
                 AI · Real-time · Live
@@ -124,8 +124,8 @@ export default function Home() {
             >
               Debate Arena
             </h1>
-            <p className="text-base sm:text-lg font-light max-w-md mx-auto leading-relaxed" style={{ color: "#a1a1aa" }}
-              style={{ animation: "fadeUp 0.8s 0.3s ease both" }}>
+            <p className="text-base sm:text-lg font-light max-w-md mx-auto leading-relaxed"
+              style={{ color: "#a1a1aa", animation: "fadeUp 0.8s 0.3s ease both" }}>
               Two AI minds. One question. You decide who wins.
             </p>
             <div className="w-16 h-px mx-auto mt-1" style={{ background: "rgba(255,255,255,0.08)" }} />

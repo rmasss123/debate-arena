@@ -11,21 +11,39 @@ const FIGHTER_CONFIG: Record<string, { color: string; glow: string; dimBg: strin
   Philosopher: { color: "#8b5cf6", glow: "rgba(139,92,246,0.4)", dimBg: "rgba(139,92,246,0.06)", border: "rgba(139,92,246,0.25)", emoji: "👁️", tagline: "The Truth Seeker" },
 };
 
+function visualValue(index: number, salt: number) {
+  return ((index * 137 + salt * 271) % 997) / 997;
+}
+
+const DEBATE_PARTICLES = Array.from({ length: 10 }, (_, i) => ({
+  id: i,
+  x: visualValue(i, 1) * 100,
+  size: visualValue(i, 2) * 1.5 + 0.5,
+  duration: visualValue(i, 3) * 22 + 16,
+  delay: visualValue(i, 4) * 16,
+  drift: (visualValue(i, 5) - 0.5) * 60,
+  color: ["#7c3aed", "#4f46e5"][Math.floor(visualValue(i, 6) * 2)],
+}));
+
+const CONFETTI_PIECES = Array.from({ length: 60 }, (_, i) => ({
+  id: i,
+  x: visualValue(i, 7) * 100,
+  color: ["#7c3aed", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#f43f5e"][Math.floor(visualValue(i, 8) * 6)],
+  size: visualValue(i, 9) * 8 + 4,
+  duration: visualValue(i, 10) * 2 + 2,
+  delay: visualValue(i, 11) * 1.5,
+  isRect: visualValue(i, 12) > 0.4,
+  rotate: visualValue(i, 13) * 360,
+}));
+
 function getFighter(agent: string) {
   return FIGHTER_CONFIG[agent] ?? { color: "#7c3aed", glow: "rgba(124,58,237,0.4)", dimBg: "rgba(124,58,237,0.06)", border: "rgba(124,58,237,0.25)", emoji: "🤖", tagline: "Unknown" };
 }
 
 const Particles = React.memo(function Particles() {
-  const particles = useMemo(() =>
-    Array.from({ length: 10 }, (_, i) => ({
-      id: i, x: Math.random() * 100, size: Math.random() * 1.5 + 0.5,
-      duration: Math.random() * 22 + 16, delay: Math.random() * 16,
-      drift: (Math.random() - 0.5) * 60, color: ["#7c3aed","#4f46e5"][Math.floor(Math.random()*2)],
-    })), []
-  );
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden>
-      {particles.map((p) => (
+      {DEBATE_PARTICLES.map((p) => (
         <div key={p.id} className="absolute bottom-0 rounded-full"
           style={{ left:`${p.x}%`, width:p.size, height:p.size, backgroundColor:p.color, opacity:0.12,
             animation:`particleRise ${p.duration}s ${p.delay}s linear infinite`,
@@ -39,7 +57,7 @@ function RoundOverlay({ round, show }: { round: number; show: boolean }) {
   if (!show) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
-      style={{ background: "rgba(5,5,8,0.5)", backdropFilter: "blur(2px)" }}>
+      style={{ background: "rgba(5,5,8,0.5)" }}>
       <div className="round-announce text-center">
         <p className="text-xs font-bold tracking-[0.5em] uppercase mb-2"
           style={{ color: "#7c3aed" }}>Round</p>
@@ -112,17 +130,9 @@ function ArgCard({ arg, side, canVote, onVote, voteLoading }: {
 }
 
 function Confetti() {
-  const pieces = useMemo(() =>
-    Array.from({ length: 60 }, (_, i) => ({
-      id: i, x: Math.random() * 100,
-      color: ["#7c3aed","#ec4899","#f59e0b","#10b981","#3b82f6","#f43f5e"][Math.floor(Math.random()*6)],
-      size: Math.random() * 8 + 4, duration: Math.random() * 2 + 2, delay: Math.random() * 1.5,
-      isRect: Math.random() > 0.4, rotate: Math.random() * 360,
-    })), []
-  );
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-      {pieces.map((p) => (
+      {CONFETTI_PIECES.map((p) => (
         <div key={p.id} className="absolute top-0"
           style={{ left:`${p.x}%`, width:p.size, height:p.isRect?p.size*2.5:p.size,
             backgroundColor:p.color, borderRadius:p.isRect?"2px":"50%",
@@ -148,31 +158,19 @@ export default function DebatePage() {
   const [voteLoading, setVoteLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const [announcedRound, setAnnouncedRound] = useState(0);
   const [showRound, setShowRound] = useState(false);
   const [roundNum, setRoundNum] = useState(1);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const streamStarted = useRef(false);
+  const announcedRound = useRef(0);
+  const roundTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Auto scroll only when new arg arrives
   const argsLen = args.length;
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [argsLen, summary]);
-
-  // Round announcement
-  useEffect(() => {
-    if (args.length === 0) return;
-    const latest = args[args.length - 1].round;
-    if (latest > announcedRound) {
-      setAnnouncedRound(latest);
-      setRoundNum(latest);
-      setShowRound(true);
-      const t = setTimeout(() => setShowRound(false), 2400);
-      return () => clearTimeout(t);
-    }
-  }, [args, announcedRound]);
 
   // SSE with StrictMode guard
   useEffect(() => {
@@ -190,6 +188,13 @@ export default function DebatePage() {
     es.addEventListener("argument", (e) => {
       const d = JSON.parse(e.data);
       setArgs((prev) => [...prev, d]);
+      if (d.round > announcedRound.current) {
+        announcedRound.current = d.round;
+        setRoundNum(d.round);
+        setShowRound(true);
+        if (roundTimer.current) clearTimeout(roundTimer.current);
+        roundTimer.current = setTimeout(() => setShowRound(false), 2400);
+      }
     });
 
     es.addEventListener("summary", (e) => {
@@ -200,7 +205,10 @@ export default function DebatePage() {
     es.addEventListener("done", () => { setStatus("done"); es.close(); });
     es.onerror = () => { setError("Connection lost."); setStatus("error"); es.close(); };
 
-    return () => es.close();
+    return () => {
+      es.close();
+      if (roundTimer.current) clearTimeout(roundTimer.current);
+    };
   }, [id]);
 
   const castVote = useCallback(async (winner: string) => {
@@ -235,7 +243,6 @@ export default function DebatePage() {
     return agents[0];
   }
 
-  const currentRound = args.length > 0 ? args[args.length - 1].round : 0;
   const nextSpeaker = status === "streaming" && !summary ? getNextSpeaker() : null;
 
   const roundGroups = useMemo(() => {
