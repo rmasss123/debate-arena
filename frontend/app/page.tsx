@@ -124,7 +124,7 @@ export default function Home() {
             >
               Debate Arena
             </h1>
-            <p className="text-zinc-500 text-base sm:text-lg font-light max-w-md mx-auto leading-relaxed"
+            <p className="text-base sm:text-lg font-light max-w-md mx-auto leading-relaxed" style={{ color: "#a1a1aa" }}
               style={{ animation: "fadeUp 0.8s 0.3s ease both" }}>
               Two AI minds. One question. You decide who wins.
             </p>
@@ -156,7 +156,7 @@ export default function Home() {
                       <span className="text-2xl">{f.emoji}</span>
                       <div>
                         <p className="text-sm font-semibold text-white">{f.id}</p>
-                        <p className="text-xs text-zinc-600 mt-0.5">{f.tagline}</p>
+                        <p className="text-xs mt-0.5" style={{ color: "#a1a1aa" }}>{f.tagline}</p>
                       </div>
                       {agentA === f.id && (
                         <span className="ml-auto text-[9px] font-bold tracking-widest px-1.5 py-0.5 rounded"
@@ -189,7 +189,7 @@ export default function Home() {
                       <span className="text-2xl">{f.emoji}</span>
                       <div>
                         <p className="text-sm font-semibold text-white">{f.id}</p>
-                        <p className="text-xs text-zinc-600 mt-0.5">{f.tagline}</p>
+                        <p className="text-xs mt-0.5" style={{ color: "#a1a1aa" }}>{f.tagline}</p>
                       </div>
                       {agentB === f.id && (
                         <span className="ml-auto text-[9px] font-bold tracking-widest px-1.5 py-0.5 rounded"
@@ -204,7 +204,7 @@ export default function Home() {
 
           {/* Topic input */}
           <div className="flex flex-col gap-3" style={{ animation: "fadeUp 0.8s 0.7s ease both" }}>
-            <label className="text-sm text-zinc-500 font-medium">What should they debate?</label>
+            <label className="text-sm font-medium" style={{ color: "#a1a1aa" }}>What should they debate?</label>
             <textarea
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
@@ -250,7 +250,7 @@ export default function Home() {
                 </span>
               ) : "Start Debate →"}
             </button>
-            <p className="text-zinc-700 text-xs">Powered by Groq · Arguments stream in real time · Press ⌘↵ to start</p>
+            <p className="text-xs" style={{ color: "#71717a" }}>Powered by Groq · Arguments stream in real time · Press ⌘↵ to start</p>
           </div>
 
         </div>

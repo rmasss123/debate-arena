@@ -63,9 +63,9 @@ function ArgCard({ arg, side, canVote, onVote, voteLoading }: {
 
   return (
     <div className={`${side === "left" ? "slide-left" : "slide-right"} rounded-2xl overflow-hidden transition-all duration-300 max-w-full`}
-      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.09)")}
-      onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}>
+      style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.11)")}
+      onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}>
 
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3"
@@ -269,8 +269,8 @@ export default function DebatePage() {
           </button>
 
           {topic && (
-            <p className="text-zinc-400 text-sm font-medium truncate min-w-0 flex-1 text-center px-2"
-              title={topic}>&ldquo;{truncatedTopic}&rdquo;</p>
+            <p className="text-sm font-medium truncate min-w-0 flex-1 text-center px-2"
+              style={{ color: "#d4d4d8" }} title={topic}>&ldquo;{truncatedTopic}&rdquo;</p>
           )}
 
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -300,7 +300,7 @@ export default function DebatePage() {
           <div className="flex flex-col items-center gap-3 py-24">
             <div className="w-8 h-8 rounded-full border-2 animate-spin"
               style={{ borderColor: "rgba(124,58,237,0.2)", borderTopColor: "#7c3aed" }} />
-            <p className="text-zinc-600 text-sm">Generating arguments…</p>
+            <p className="text-sm" style={{ color: "#a1a1aa" }}>Generating arguments…</p>
           </div>
         )}
 
@@ -310,7 +310,7 @@ export default function DebatePage() {
             {/* Divider */}
             <div className="flex items-center gap-3 py-1">
               <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.05)" }} />
-              <span className="text-[10px] font-medium tracking-[0.3em] uppercase text-zinc-700">Round {ri + 1}</span>
+              <span className="text-[10px] font-medium tracking-[0.3em] uppercase" style={{ color: "#71717a" }}>Round {ri + 1}</span>
               <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.05)" }} />
             </div>
 
@@ -332,7 +332,7 @@ export default function DebatePage() {
           <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
             style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
             <span className="text-sm">{getFighter(nextSpeaker).emoji}</span>
-            <span className="text-zinc-600 text-sm">{nextSpeaker} is thinking</span>
+            <span className="text-sm" style={{ color: "#a1a1aa" }}>{nextSpeaker} is thinking</span>
             <div className="flex gap-1 ml-1">
               {[0,1,2].map((i) => (
                 <div key={i} className="w-1.5 h-1.5 rounded-full thinking-dot-anim"
@@ -367,7 +367,7 @@ export default function DebatePage() {
           <div className="fade-in rounded-2xl px-4 py-5 text-center"
             style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
             <p className="text-white font-semibold text-sm mb-1">Who made the stronger case?</p>
-            <p className="text-zinc-600 text-xs mb-4">Vote on individual arguments above, or pick an overall winner</p>
+            <p className="text-xs mb-4" style={{ color: "#a1a1aa" }}>Vote on individual arguments above, or pick an overall winner</p>
             <div className="flex items-center justify-center gap-3 flex-wrap">
               {agents.map((a) => {
                 const f = getFighter(a);
@@ -388,7 +388,7 @@ export default function DebatePage() {
         {/* Post vote */}
         {totalVotes > 0 && (
           <div className="fade-in text-center py-2">
-            <p className="text-zinc-600 text-sm">
+            <p className="text-sm" style={{ color: "#a1a1aa" }}>
               {totalVotes} vote{totalVotes !== 1 ? "s" : ""} cast · thanks for participating
             </p>
           </div>
