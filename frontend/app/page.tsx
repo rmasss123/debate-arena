@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, memo } from "react";
 import { useRouter } from "next/navigation";
 
-const API = "http://127.0.0.1:8000";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 const FIGHTERS = [
   {
@@ -36,7 +36,7 @@ const FIGHTERS = [
 ] as const;
 
 /* ---------- Particles ---------- */
-function Particles() {
+const Particles = memo(function Particles() {
   const particles = useMemo(
     () =>
       Array.from({ length: 28 }, (_, i) => ({
@@ -70,10 +70,10 @@ function Particles() {
       ))}
     </div>
   );
-}
+});
 
 /* ---------- Gradient orbs ---------- */
-function GradientOrbs() {
+const GradientOrbs = memo(function GradientOrbs() {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       <div
@@ -105,7 +105,7 @@ function GradientOrbs() {
       />
     </div>
   );
-}
+});
 
 /* ---------- Typewriter ---------- */
 function TypewriterText({ text, speed = 40 }: { text: string; speed?: number }) {
@@ -138,11 +138,13 @@ function FighterCard({
   isSelected,
   isDisabled,
   onSelect,
+  slot,
 }: {
   fighter: typeof FIGHTERS[number];
   isSelected: boolean;
   isDisabled: boolean;
   onSelect: () => void;
+  slot: "P1" | "P2";
 }) {
   const [shaking, setShaking] = useState(false);
 
@@ -182,7 +184,7 @@ function FighterCard({
       <div className="flex items-center gap-3">
         {/* Avatar circle */}
         <div
-          className="w-12 h-12 rounded-full flex items-center justify-center text-xl flex-shrink-0 transition-all duration-300"
+          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-lg sm:text-xl flex-shrink-0 transition-all duration-300"
           style={{
             border: `2px solid ${isSelected ? fighter.color : "rgba(255,255,255,0.1)"}`,
             background: `radial-gradient(circle, ${fighter.dimBg} 0%, transparent 70%)`,
@@ -193,9 +195,9 @@ function FighterCard({
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-sm text-white tracking-wide">{fighter.id.toUpperCase()}</p>
+          <p className="font-bold text-xs sm:text-sm text-white tracking-wide">{fighter.id.toUpperCase()}</p>
           <p
-            className="text-xs mt-0.5 truncate transition-colors duration-300"
+            className="text-[10px] sm:text-xs mt-0.5 truncate transition-colors duration-300"
             style={{ color: isSelected ? fighter.color : "#6b7280" }}
           >
             {fighter.tagline}
@@ -207,7 +209,7 @@ function FighterCard({
             className="text-[10px] font-black px-2 py-0.5 rounded tracking-widest flex-shrink-0"
             style={{ background: fighter.color, color: "#000" }}
           >
-            P1
+            {slot}
           </div>
         )}
       </div>
@@ -264,26 +266,26 @@ export default function Home() {
         }}
       />
 
-      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-16">
-        <div className="w-full max-w-3xl flex flex-col gap-10">
+      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-16 overflow-x-hidden">
+        <div className="w-full max-w-3xl flex flex-col gap-8 sm:gap-10">
 
           {/* ── TITLE ── */}
           <div className="text-center">
-            <p className="text-xs font-bold tracking-[0.4em] text-purple-500 uppercase mb-5">
+            <p className="text-xs font-bold tracking-[0.3em] sm:tracking-[0.4em] text-purple-500 uppercase mb-4 sm:mb-5">
               ⚡ AI-Powered · Real-Time · Live Voting
             </p>
             <h1
-              className="glitch-text font-black text-white leading-none select-none mb-6"
+              className="glitch-text font-black text-white leading-none select-none mb-4 sm:mb-6"
               data-text="DEBATE ARENA"
               style={{
-                fontSize: "clamp(3rem, 10vw, 7rem)",
+                fontSize: "clamp(2.5rem, 10vw, 7rem)",
                 letterSpacing: "-0.02em",
                 textShadow: "0 0 40px rgba(168,85,247,0.4), 0 0 80px rgba(168,85,247,0.15)",
               }}
             >
               DEBATE ARENA
             </h1>
-            <p className="text-zinc-400 text-lg sm:text-xl min-h-[1.8em]">
+            <p className="text-zinc-400 text-base sm:text-xl min-h-[1.8em]">
               <TypewriterText
                 text="Two AI minds. One topic. You decide who wins."
                 speed={45}
@@ -294,7 +296,7 @@ export default function Home() {
           {/* ── FIGHTER SELECT ── */}
           <div>
             <p
-              className="text-center text-xs font-black tracking-[0.35em] uppercase mb-5"
+              className="text-center text-xs font-black tracking-[0.25em] sm:tracking-[0.35em] uppercase mb-4 sm:mb-5"
               style={{
                 color: "#a855f7",
                 textShadow: "0 0 20px rgba(168,85,247,0.6)",
@@ -303,8 +305,8 @@ export default function Home() {
               ⚔ SELECT YOUR FIGHTERS ⚔
             </p>
 
-            {/* 3-column layout: A | VS | B */}
-            <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-start">
+            {/* Mobile: stack vertically. sm+: 3-column grid */}
+            <div className="flex flex-col gap-4 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-3 sm:items-start">
               {/* Agent A column */}
               <div className="flex flex-col gap-2">
                 <p className="text-[11px] font-black tracking-widest text-center uppercase text-emerald-400 mb-1">
@@ -317,12 +319,13 @@ export default function Home() {
                     isSelected={agentA === f.id}
                     isDisabled={agentB === f.id}
                     onSelect={() => setAgentA(f.id)}
+                    slot="P1"
                   />
                 ))}
               </div>
 
               {/* VS */}
-              <div className="flex items-center justify-center pt-8 px-2">
+              <div className="flex items-center justify-center py-2 sm:pt-8 sm:py-0 px-2">
                 <span
                   className="vs-flash font-black text-2xl sm:text-3xl select-none"
                   style={{ color: "#a855f7", letterSpacing: "0.05em" }}
@@ -343,6 +346,7 @@ export default function Home() {
                     isSelected={agentB === f.id}
                     isDisabled={agentA === f.id}
                     onSelect={() => setAgentB(f.id)}
+                    slot="P2"
                   />
                 ))}
               </div>
@@ -377,7 +381,7 @@ export default function Home() {
           </div>
 
           {error && (
-            <p className="text-rose-400 text-sm text-center -mt-4"
+            <p className="text-rose-400 text-sm text-center -mt-2"
                style={{ textShadow: "0 0 10px rgba(244,63,94,0.5)" }}>
               ⚠ {error}
             </p>
@@ -391,7 +395,7 @@ export default function Home() {
               disabled={loading || !topic.trim()}
               onMouseEnter={() => setBtnHover(true)}
               onMouseLeave={() => setBtnHover(false)}
-              className="w-full rounded-xl py-5 text-base font-black tracking-widest uppercase text-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40"
+              className="w-full rounded-xl py-4 sm:py-5 text-sm sm:text-base font-black tracking-widest uppercase text-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40"
               style={{
                 background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 40%, #dc2626 100%)",
                 animation: !loading && topic.trim() ? "btn-pulse 2s ease-in-out infinite" : "none",
@@ -409,7 +413,7 @@ export default function Home() {
                 </span>
               )}
             </button>
-            <p className="text-zinc-600 text-xs tracking-wider">
+            <p className="text-zinc-600 text-xs tracking-wider text-center">
               Powered by Groq AI — arguments generated in real time
             </p>
           </div>

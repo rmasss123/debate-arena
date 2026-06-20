@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, memo } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-const API = "http://127.0.0.1:8000";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 const FIGHTER_CONFIG: Record<
   string,
@@ -31,7 +31,7 @@ function getFighter(agent: string) {
 }
 
 /* ─── Particles ─── */
-function Particles() {
+const Particles = memo(function Particles() {
   const particles = useMemo(() =>
     Array.from({ length: 20 }, (_, i) => ({
       id: i, x: Math.random() * 100, size: Math.random() * 2 + 0.8,
@@ -50,10 +50,10 @@ function Particles() {
       ))}
     </div>
   );
-}
+});
 
 /* ─── Gradient orbs ─── */
-function GradientOrbs() {
+const GradientOrbs = memo(function GradientOrbs() {
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       <div className="absolute rounded-full blur-3xl"
@@ -66,20 +66,20 @@ function GradientOrbs() {
           animation: "orb-drift-2 20s ease-in-out infinite" }} />
     </div>
   );
-}
+});
 
 /* ─── Round announcement ─── */
 function RoundAnnouncement({ round, show }: { round: number; show: boolean }) {
   if (!show) return null;
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none">
-      <div className="round-announce text-center">
+      <div className="round-announce text-center px-4">
         <p className="font-black uppercase tracking-[0.5em] mb-2"
           style={{ color: "#a855f7", fontSize: "clamp(0.7rem, 2vw, 1rem)", textShadow: "0 0 20px rgba(168,85,247,0.8)" }}>
           ⚔ Fight!
         </p>
         <p className="font-black text-white"
-          style={{ fontSize: "clamp(5rem, 18vw, 12rem)", lineHeight: 1,
+          style={{ fontSize: "clamp(4rem, 18vw, 12rem)", lineHeight: 1,
             textShadow: "0 0 60px rgba(168,85,247,0.7), 0 0 120px rgba(168,85,247,0.3)", letterSpacing: "-0.03em" }}>
           ROUND {round}
         </p>
@@ -92,7 +92,7 @@ function RoundAnnouncement({ round, show }: { round: number; show: boolean }) {
 function ThinkingDots({ agentName }: { agentName: string }) {
   const f = getFighter(agentName);
   return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-xl"
+    <div className="flex items-center gap-2 sm:gap-3 px-4 py-3 rounded-xl"
       style={{ background: f.dimBg, border: `1px solid ${f.borderColor}` }}>
       <span className="text-lg">{f.emoji}</span>
       <span className="text-sm font-bold" style={{ color: f.color }}>{agentName}</span>
@@ -146,20 +146,20 @@ function ArgumentCard({
       style={{ border: `1px solid ${f.borderColor}`, background: f.dimBg }}>
 
       {/* Card header */}
-      <div className="flex items-center justify-between px-5 py-3"
+      <div className="flex items-center justify-between px-4 sm:px-5 py-3"
         style={{ borderBottom: `1px solid ${f.borderColor}`, background: f.dimBg }}>
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0"
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-sm sm:text-base flex-shrink-0"
             style={{ border: `2px solid ${f.color}`, background: f.dimBg, boxShadow: `0 0 12px ${f.glow}` }}>
             {f.emoji}
           </div>
-          <div>
-            <p className="font-black text-sm tracking-wide text-white">{arg.agent.toUpperCase()}</p>
-            <p className="text-[11px]" style={{ color: f.color }}>{f.tagline}</p>
+          <div className="min-w-0">
+            <p className="font-black text-xs sm:text-sm tracking-wide text-white truncate">{arg.agent.toUpperCase()}</p>
+            <p className="text-[10px] sm:text-[11px] truncate" style={{ color: f.color }}>{f.tagline}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-2">
           <span className="text-[10px] font-black tracking-widest px-2 py-0.5 rounded"
             style={{ background: `${f.color}22`, color: f.color, border: `1px solid ${f.borderColor}` }}>
             R{arg.round}
@@ -169,7 +169,7 @@ function ArgumentCard({
             <button
               onClick={() => { onVote(arg.agent); setVoted(true); }}
               disabled={voteLoading}
-              className="text-[11px] font-black px-3 py-1 rounded-full transition-all active:scale-90 disabled:opacity-40"
+              className="text-[11px] font-black px-2 sm:px-3 py-1 rounded-full transition-all active:scale-90 disabled:opacity-40"
               style={{ background: `${f.color}22`, color: f.color, border: `1px solid ${f.borderColor}` }}
               onMouseEnter={(e) => (e.currentTarget.style.boxShadow = `0 0 14px ${f.glow}`)}
               onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}>
@@ -177,7 +177,7 @@ function ArgumentCard({
             </button>
           )}
           {voted && (
-            <span className="count-pop text-[11px] font-black px-3 py-1 rounded-full"
+            <span className="count-pop text-[11px] font-black px-2 sm:px-3 py-1 rounded-full"
               style={{ background: f.color, color: "#000" }}>
               ✓ VOTED
             </span>
@@ -186,8 +186,8 @@ function ArgumentCard({
       </div>
 
       {/* Content */}
-      <div className="px-5 py-4">
-        <p className="text-zinc-200 leading-relaxed text-[15px]">
+      <div className="px-4 sm:px-5 py-4">
+        <p className="text-zinc-200 leading-relaxed text-sm sm:text-[15px]">
           <TypewriterText text={arg.content} speed={16} />
         </p>
       </div>
@@ -238,17 +238,16 @@ export default function DebatePage() {
   const [announceRoundNum, setAnnounceRoundNum] = useState(1);
 
   const [copied, setCopied] = useState(false);
-
-  // Total votes cast (for showing final prompt)
-  const [totalVotes, setTotalVotes] = useState(0);
-
+  const [votedFor, setVotedFor] = useState<string | null>(null);
   const [voteLoading, setVoteLoading] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const streamStarted = useRef(false);
+
+  // Auto-scroll only when new arguments arrive
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [args, summary]);
+  }, [args.length]);
 
   // Detect new rounds
   useEffect(() => {
@@ -263,9 +262,12 @@ export default function DebatePage() {
     }
   }, [args, announcedRound]);
 
-  // SSE
+  // SSE — ref guard prevents double connection in React StrictMode
   useEffect(() => {
     if (!id) return;
+    if (streamStarted.current) return;
+    streamStarted.current = true;
+
     setStatus("streaming");
     const es = new EventSource(`${API}/debate/${id}/stream`);
 
@@ -301,7 +303,7 @@ export default function DebatePage() {
         body: JSON.stringify({ debate_id: id, winner_agent: winnerAgent }),
       });
       if (!res.ok) throw new Error("Vote failed");
-      setTotalVotes((v) => v + 1);
+      setVotedFor(winnerAgent);
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
     } catch {
@@ -331,12 +333,15 @@ export default function DebatePage() {
   const nextSpeaker = status === "streaming" ? getNextSpeaker() : null;
   const currentRound = args.length > 0 ? args[args.length - 1].round : 0;
 
-  const roundGroups: ArgData[][] = [];
-  for (const arg of args) {
-    const ri = arg.round - 1;
-    if (!roundGroups[ri]) roundGroups[ri] = [];
-    roundGroups[ri].push(arg);
-  }
+  const roundGroups = useMemo(() => {
+    const groups: ArgData[][] = [];
+    for (const arg of args) {
+      const ri = arg.round - 1;
+      if (!groups[ri]) groups[ri] = [];
+      groups[ri].push(arg);
+    }
+    return groups;
+  }, [args]);
 
   return (
     <div className="scanlines min-h-screen flex flex-col relative" style={{ background: "#08080d" }}>
@@ -355,65 +360,67 @@ export default function DebatePage() {
       {/* ── HEADER ── */}
       <header className="sticky top-0 z-20 backdrop-blur-md"
           style={{ borderBottom: "1px solid rgba(168,85,247,0.15)", background: "rgba(8,8,13,0.93)" }}>
-          <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-2.5">
+          <div className="mx-auto flex max-w-4xl items-center justify-between px-3 sm:px-4 py-2.5">
 
             <button onClick={() => router.push("/")}
-              className="text-xs font-bold tracking-widest uppercase transition-all"
+              className="text-xs font-bold tracking-widest uppercase transition-all flex-shrink-0"
               style={{ color: "#6b7280" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "#a855f7")}
               onMouseLeave={(e) => (e.currentTarget.style.color = "#6b7280")}>
-              ← New Debate
+              <span className="hidden sm:inline">← New Debate</span>
+              <span className="sm:hidden">←</span>
             </button>
 
-            <span className="font-black text-sm tracking-widest uppercase"
+            <span className="font-black text-xs sm:text-sm tracking-widest uppercase"
               style={{ color: "#a855f7", textShadow: "0 0 20px rgba(168,85,247,0.5)" }}>
               ⚔ DEBATE ARENA
             </span>
 
             {/* Right side: share + status */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
               {/* Share button */}
               <button onClick={copyShareLink}
-                className="text-[11px] font-black px-2.5 py-1 rounded-lg tracking-wide uppercase transition-all"
+                className="text-[11px] font-black px-2 py-1 sm:px-2.5 rounded-lg tracking-wide uppercase transition-all"
                 style={{ background: "rgba(168,85,247,0.12)", color: copied ? "#10b981" : "#a855f7",
                   border: "1px solid rgba(168,85,247,0.25)" }}
                 onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 0 12px rgba(168,85,247,0.4)")}
                 onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}>
-                {copied ? "✓ Copied!" : "📡 Share"}
+                {copied ? "✓" : "📡"}
+                <span className="hidden sm:inline ml-1">{copied ? "Copied!" : "Share"}</span>
               </button>
 
               {status === "streaming" && (
-                <div className="flex items-center gap-1.5">
-                  <div className="live-dot w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#ef4444" }} />
-                  <span className="text-xs font-bold text-red-400 tracking-widest uppercase">
-                    LIVE · R{currentRound || "—"}/3
+                <div className="flex items-center gap-1 sm:gap-1.5">
+                  <div className="live-dot w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full" style={{ backgroundColor: "#ef4444" }} />
+                  <span className="text-[10px] sm:text-xs font-bold text-red-400 tracking-widest uppercase">
+                    <span className="hidden sm:inline">LIVE · </span>R{currentRound || "—"}/3
                   </span>
                 </div>
               )}
               {status === "done" && (
-                <span className="text-xs font-bold tracking-widest uppercase text-emerald-400">✓ COMPLETE</span>
+                <span className="text-[10px] sm:text-xs font-bold tracking-widest uppercase text-emerald-400">✓ DONE</span>
               )}
               {status === "error" && (
-                <span className="text-xs font-bold text-rose-400">DISCONNECTED</span>
+                <span className="text-[10px] sm:text-xs font-bold text-rose-400">ERR</span>
               )}
             </div>
           </div>
         </header>
 
       {/* ── MAIN CONTENT ── */}
-      <main className="relative z-10 mx-auto w-full max-w-4xl flex-1 px-4 py-8 flex flex-col gap-6">
+      <main className="relative z-10 mx-auto w-full max-w-4xl flex-1 px-3 sm:px-4 py-6 sm:py-8 flex flex-col gap-4 sm:gap-6 overflow-x-hidden">
 
         {/* Topic */}
         {topic && (
-          <div className="animate-fade-in rounded-2xl px-6 py-5 neon-purple"
+          <div className="animate-fade-in rounded-2xl px-4 sm:px-6 py-4 sm:py-5 neon-purple"
             style={{ border: "1px solid rgba(168,85,247,0.3)", background: "rgba(168,85,247,0.06)" }}>
             <p className="text-[10px] font-black tracking-[0.4em] uppercase text-purple-400 mb-2">▶ Debate Topic</p>
-            <h1 className="text-xl sm:text-2xl font-black text-white leading-snug"
+            <h1 className="text-lg sm:text-2xl font-black text-white leading-snug"
               style={{ textShadow: "0 0 30px rgba(168,85,247,0.3)" }}>
               &ldquo;{topic}&rdquo;
             </h1>
             {agents.length === 2 && (
-              <div className="flex items-center gap-3 mt-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-3 sm:mt-4">
                 {agents.map((a, i) => {
                   const f = getFighter(a);
                   return (
@@ -426,7 +433,7 @@ export default function DebatePage() {
                     </div>
                   );
                 })}
-                <span className="text-zinc-600 text-xs ml-1">· 3 ROUNDS</span>
+                <span className="text-zinc-600 text-xs">· 3 ROUNDS</span>
               </div>
             )}
           </div>
@@ -445,10 +452,10 @@ export default function DebatePage() {
 
         {/* Rounds */}
         {roundGroups.map((group, ri) => (
-          <div key={ri} className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
+          <div key={ri} className="flex flex-col gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <div className="flex-1 h-px" style={{ background: "rgba(168,85,247,0.2)" }} />
-              <span className="text-[11px] font-black tracking-[0.4em] uppercase px-3 py-1 rounded-full"
+              <span className="text-[10px] sm:text-[11px] font-black tracking-[0.3em] sm:tracking-[0.4em] uppercase px-3 py-1 rounded-full"
                 style={{ color: "#a855f7", border: "1px solid rgba(168,85,247,0.3)", background: "rgba(168,85,247,0.08)" }}>
                 ROUND {ri + 1}
               </span>
@@ -471,8 +478,8 @@ export default function DebatePage() {
           </div>
         ))}
 
-        {/* Thinking */}
-        {status === "streaming" && nextSpeaker && args.length > 0 && (
+        {/* Thinking — only while streaming and before summary */}
+        {status === "streaming" && nextSpeaker && args.length > 0 && !summary && (
           <ThinkingDots agentName={nextSpeaker} />
         )}
 
@@ -480,7 +487,7 @@ export default function DebatePage() {
         {summary && (
           <div className="animate-fade-in rounded-2xl overflow-hidden"
             style={{ border: "1px solid rgba(251,191,36,0.4)", background: "rgba(251,191,36,0.05)" }}>
-            <div className="px-5 py-3 flex items-center gap-2"
+            <div className="px-4 sm:px-5 py-3 flex items-center gap-2"
               style={{ borderBottom: "1px solid rgba(251,191,36,0.3)", background: "rgba(251,191,36,0.06)" }}>
               <span className="text-xl" style={{ animation: "float-slow 3s ease-in-out infinite" }}>👑</span>
               <div>
@@ -488,26 +495,26 @@ export default function DebatePage() {
                 <p className="text-xs text-amber-500/60">Moderator Summary</p>
               </div>
             </div>
-            <div className="px-5 py-5">
-              <p className="text-zinc-200 leading-relaxed text-[15px]">
+            <div className="px-4 sm:px-5 py-4 sm:py-5">
+              <p className="text-zinc-200 leading-relaxed text-sm sm:text-[15px]">
                 <TypewriterText text={summary} speed={22} />
               </p>
             </div>
           </div>
         )}
 
-        {/* Final vote prompt (only if no votes cast yet) */}
-        {status === "done" && totalVotes === 0 && agents.length === 2 && (
-          <div className="animate-fade-in rounded-2xl px-5 py-6 text-center"
+        {/* Final vote prompt — only if user hasn't voted yet */}
+        {status === "done" && votedFor === null && agents.length === 2 && (
+          <div className="animate-fade-in rounded-2xl px-4 sm:px-5 py-5 sm:py-6 text-center"
             style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}>
             <p className="font-black text-white text-sm tracking-widest uppercase mb-1">⚔ Who Won?</p>
-            <p className="text-zinc-500 text-xs mb-5">Vote on any argument card above, or pick an overall winner</p>
-            <div className="flex items-center justify-center gap-4">
+            <p className="text-zinc-500 text-xs mb-4 sm:mb-5">Vote on any argument card above, or pick an overall winner</p>
+            <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
               {agents.map((a) => {
                 const f = getFighter(a);
                 return (
                   <button key={a} onClick={() => castVote(a)} disabled={voteLoading}
-                    className="flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-black tracking-wide uppercase transition-all active:scale-95 disabled:opacity-40"
+                    className="flex items-center gap-2 rounded-xl px-4 sm:px-6 py-2.5 sm:py-3 text-sm font-black tracking-wide uppercase transition-all active:scale-95 disabled:opacity-40"
                     style={{ background: f.dimBg, color: f.color, border: `1px solid ${f.borderColor}` }}
                     onMouseEnter={(e) => (e.currentTarget.style.boxShadow = `0 0 20px ${f.glow}`)}
                     onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}>
@@ -519,13 +526,16 @@ export default function DebatePage() {
           </div>
         )}
 
-        {/* Post-vote summary */}
-        {totalVotes > 0 && (
-          <div className="animate-fade-in rounded-2xl px-5 py-4 text-center"
+        {/* Post-vote confirmation */}
+        {votedFor !== null && (
+          <div className="animate-fade-in rounded-2xl px-4 sm:px-5 py-4 text-center"
             style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}>
             <p className="text-zinc-400 text-sm">
-              <span className="font-black text-white">{totalVotes}</span> vote{totalVotes !== 1 ? "s" : ""} cast.{" "}
-              <span className="text-zinc-400">Keep voting on argument cards above.</span>
+              You voted for{" "}
+              <span className="font-black" style={{ color: getFighter(votedFor).color }}>
+                {getFighter(votedFor).emoji} {votedFor}
+              </span>
+              . Thanks for voting!
             </p>
           </div>
         )}
@@ -538,9 +548,9 @@ export default function DebatePage() {
         )}
 
         {status === "done" && (
-          <div className="flex justify-center pt-4 pb-8">
+          <div className="flex justify-center pt-2 pb-8">
             <button onClick={() => router.push("/")}
-              className="px-8 py-3 rounded-xl text-sm font-black tracking-widest uppercase transition-all active:scale-95"
+              className="px-6 sm:px-8 py-3 rounded-xl text-sm font-black tracking-widest uppercase transition-all active:scale-95"
               style={{ background: "rgba(168,85,247,0.1)", color: "#a855f7", border: "1px solid rgba(168,85,247,0.3)" }}
               onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 0 20px rgba(168,85,247,0.4)")}
               onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}>
