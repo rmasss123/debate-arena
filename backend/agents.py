@@ -111,6 +111,38 @@ def generate_argument(
     return response.choices[0].message.content.strip()
 
 
+def score_argument(content: str, topic: str) -> int:
+    """Score an argument 1-10 for rhetorical strength. Returns a single integer."""
+    import re
+    try:
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a debate judge scoring arguments for rhetorical strength. "
+                        "Consider clarity, evidence, persuasiveness, and logical consistency. "
+                        "Respond with ONLY a single integer from 1 to 10. No other text."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": f"Topic: {topic}\n\nArgument to score:\n{content}",
+                },
+            ],
+            max_tokens=5,
+            temperature=0.2,
+        )
+        raw = response.choices[0].message.content.strip()
+        match = re.search(r"\d+", raw)
+        if match:
+            return max(1, min(10, int(match.group())))
+    except Exception:
+        pass
+    return 5
+
+
 def generate_moderator_summary(topic: str, all_arguments: list) -> str:
     history = "\n".join(
         f"[{arg['agent_name']} - Round {arg['round_number']}]: {arg['content']}"

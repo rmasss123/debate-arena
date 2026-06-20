@@ -70,7 +70,18 @@ async def stream_debate(debate_id: str):
                     ),
                 )
 
-                saved = database.save_argument(debate_id, agent_name, content, round_num)
+                # Score the argument and save to DB concurrently
+                impact_score, saved = await asyncio.gather(
+                    asyncio.get_event_loop().run_in_executor(
+                        None,
+                        lambda c=content, t=topic: agents.score_argument(c, t),
+                    ),
+                    asyncio.get_event_loop().run_in_executor(
+                        None,
+                        lambda: database.save_argument(debate_id, agent_name, content, round_num),
+                    ),
+                )
+
                 all_arguments.append(saved)
 
                 yield {
@@ -81,6 +92,7 @@ async def stream_debate(debate_id: str):
                             "round": round_num,
                             "content": content,
                             "argument_id": saved["id"],
+                            "impact_score": impact_score,
                         }
                     ),
                 }
