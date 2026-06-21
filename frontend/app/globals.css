@@ -232,7 +232,7 @@ body {
 .arena-corner-tr { top: -1px; right: -1px; border-top: 2px solid; border-right: 2px solid; border-radius: 0 8px 0 0; }
 .arena-corner-bl { bottom: -1px; left: -1px; border-bottom: 2px solid; border-left: 2px solid; border-radius: 0 0 0 8px; }
 .arena-corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid; border-right: 2px solid; border-radius: 0 0 8px; }
-.fighter-bay { position: relative; overflow: hidden; border: 1px solid color-mix(in srgb, var(--fighter-color) 28%, transparent); background: linear-gradient(145deg, color-mix(in srgb, var(--fighter-color) 9%, transparent), rgba(255,255,255,0.018)); }
+.fighter-bay { position: relative; overflow: hidden; border: 1px solid color-mix(in srgb, var(--fighter-color) 18%, transparent); background: linear-gradient(145deg, color-mix(in srgb, var(--fighter-color) 6%, transparent), rgba(255,255,255,0.01)); }
 .fighter-bay::before { content: ""; position: absolute; width: 180px; height: 180px; border: 1px solid color-mix(in srgb, var(--fighter-color) 16%, transparent); border-radius: 50%; top: -100px; opacity: 0.7; }
 .fighter-bay-left::before { right: -65px; }.fighter-bay-right::before { left: -65px; }
 .fighter-emoji { font-size: 2.2rem; margin-bottom: 8px; filter: drop-shadow(0 0 18px var(--fighter-color)); }
@@ -244,7 +244,7 @@ body {
 .versus-line { width: 1px; flex: 1; min-height: 24px; background: linear-gradient(transparent, rgba(139,92,246,0.5), transparent); }
 .versus-core { width: 58px; height: 58px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; padding: 7px; border: 1px solid rgba(139,92,246,0.38); box-shadow: 0 0 35px rgba(124,58,237,0.2); animation: reactorPulse 2.5s ease-in-out infinite; }
 .versus-core span { width: 100%; height: 100%; display: grid; place-items: center; border-radius: 50%; font-weight: 950; font-style: italic; color: white; background: #6d28d9; }
-.command-deck { border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.025); }
+.command-deck { border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.012); }
 .topic-terminal textarea { min-height: 116px; color: #f4f4f5; border: 1px solid rgba(255,255,255,0.08); background: #08080d; transition: border-color 200ms, box-shadow 200ms; }
 .topic-terminal textarea:focus { border-color: rgba(139,92,246,0.55); box-shadow: 0 0 0 3px rgba(124,58,237,0.08), inset 0 0 35px rgba(124,58,237,0.035); }
 .topic-prompt { position: absolute; top: 17px; left: 17px; z-index: 1; color: #8b5cf6; font-family: var(--font-mono); font-weight: 800; }

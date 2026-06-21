@@ -12,11 +12,8 @@ const FIGHTERS = [
     tagline: "The Eternal Believer",
     color: "#10b981",
     colorRgb: "16,185,129",
-    dimBg: "rgba(16,185,129,0.08)",
-    border: "rgba(16,185,129,0.3)",
     style: "RHETORIC / EMPATHY",
     model: "LLAMA-3-70B-INSTRUCT",
-    stats: { logic: 82, rhetoric: 95, speed: 88, power: 91 },
     bio: "Unwavering commitment to constructive outcomes. Believes in human potential, technological progress, and ethical synergy."
   },
   {
@@ -25,11 +22,8 @@ const FIGHTERS = [
     tagline: "The Devil's Advocate",
     color: "#f43f5e",
     colorRgb: "244,63,94",
-    dimBg: "rgba(244,63,94,0.08)",
-    border: "rgba(244,63,94,0.3)",
     style: "SKEPTICISM / LOGIC",
     model: "MIXTRAL-8X22B",
-    stats: { logic: 96, rhetoric: 84, speed: 92, power: 89 },
     bio: "Relentless critical thinker. Exposes logical fallacies, uncovers hidden agendas, and demands empirical rigor."
   },
   {
@@ -38,11 +32,8 @@ const FIGHTERS = [
     tagline: "The Truth Seeker",
     color: "#8b5cf6",
     colorRgb: "139,92,246",
-    dimBg: "rgba(139,92,246,0.08)",
-    border: "rgba(139,92,246,0.3)",
     style: "DIALECTIC / SYNTHESIS",
     model: "CLAUDE-3.5-SONNET",
-    stats: { logic: 92, rhetoric: 91, speed: 85, power: 96 },
     bio: "Rises above binary logic to evaluate ethical implications, historical contexts, and existential truths."
   },
 ] as const;
@@ -167,8 +158,8 @@ export default function Home() {
         </div>
         <div className="hidden md:flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className="text-zinc-600">{"AGENTS:"}</span>
-            <span className="text-emerald-500 font-semibold">{FIGHTERS.length}{" LOADED"}</span>
+            <span className="text-zinc-600">{"FORMAT:"}</span>
+            <span className="text-emerald-500 font-semibold">{"2 VS 2"}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-zinc-600">{"ROUNDS:"}</span>
@@ -205,14 +196,11 @@ export default function Home() {
 
       <main className="relative z-10 flex-1 px-4 py-8 sm:py-12">
         <div className="mx-auto w-full max-w-6xl">
-          <header className="arena-hero relative text-center mb-8 sm:mb-12 px-4 py-8 rounded-3xl border border-zinc-900/50 bg-gradient-to-b from-zinc-950/30 to-transparent backdrop-blur-sm">
-            <div className="arena-corner arena-corner-tl" /><div className="arena-corner arena-corner-tr" />
-            <div className="arena-corner arena-corner-bl" /><div className="arena-corner arena-corner-br" />
-            <div className="telemetry-grid-overlay opacity-50" />
+          <header className="arena-hero relative text-center mb-8 sm:mb-12 px-4 py-8">
             <div className="relative z-10">
               <div className="flex items-center justify-center gap-3 mb-6">
                 <span className="arena-live-dot" />
-                <span className="text-[10px] font-mono tracking-[0.35em] uppercase text-violet-400">{"COGNITIVE FEED READY // 3 CORES DETECTED"}</span>
+                <span className="text-[10px] font-mono tracking-[0.35em] uppercase text-violet-400">{"COGNITIVE FEED READY // 2 AGENTS LOADED"}</span>
               </div>
               <h1 className="arena-wordmark select-none tracking-tighter" aria-label="Debate Arena">
                 <span className="arena-wordmark-solid font-black bg-gradient-to-r from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent">DEBATE</span>
@@ -244,7 +232,7 @@ export default function Home() {
                 <span>{"CAMERA_A: BROAD_LENS"}</span>
               </div>
               <span className="hidden md:inline">{"SIGNAL COHERENCE: 100% // NO DELAY"}</span>
-              <span>{"RESOLVING POWER: "}{((fighterA.stats.power + fighterB.stats.power)/2).toFixed(1)}{"GW"}</span>
+              <span>{fighterA.model}{" VS "}{fighterB.model}</span>
             </div>
 
             {/* Left Fighter Telemetry */}
@@ -254,24 +242,7 @@ export default function Home() {
                 {"CHALLENGER_01 // ONLINE"}
               </span>
               <strong>{fighterA.id}</strong>
-              <div className="mt-2 hidden sm:flex flex-col gap-1 w-44">
-                <div className="flex justify-between text-[8px] font-mono text-zinc-500 uppercase">
-                  <span>{"LOGIC CORE"}</span>
-                  <span className="text-emerald-400">{fighterA.stats.logic}{"%"}</span>
-                </div>
-                <div className="stasis-bar-container">
-                  <div className="stasis-bar-fill" style={{ width: `${fighterA.stats.logic}%`, "--bar-color": fighterA.color } as React.CSSProperties} />
-                  <div className="stasis-bar-glow" />
-                </div>
-                <div className="flex justify-between text-[8px] font-mono text-zinc-500 uppercase mt-1">
-                  <span>{"RHETORIC FLUIDITY"}</span>
-                  <span className="text-emerald-400">{fighterA.stats.rhetoric}{"%"}</span>
-                </div>
-                <div className="stasis-bar-container">
-                  <div className="stasis-bar-fill" style={{ width: `${fighterA.stats.rhetoric}%`, "--bar-color": fighterA.color } as React.CSSProperties} />
-                  <div className="stasis-bar-glow" />
-                </div>
-              </div>
+              <small className="mt-2 font-mono" style={{ color: fighterA.color }}>{fighterA.style}</small>
               <small className="mt-1 font-sans" style={{ color: fighterA.color }}>{fighterA.tagline}</small>
             </div>
 
@@ -282,24 +253,7 @@ export default function Home() {
                 <span className="w-1 h-1 rounded-full bg-rose-500 animate-pulse" />
               </span>
               <strong>{fighterB.id}</strong>
-              <div className="mt-2 hidden sm:flex flex-col gap-1 w-44 items-end">
-                <div className="flex justify-between text-[8px] font-mono text-zinc-500 uppercase w-full">
-                  <span>{"LOGIC CORE"}</span>
-                  <span className="text-rose-400">{fighterB.stats.logic}{"%"}</span>
-                </div>
-                <div className="stasis-bar-container w-full">
-                  <div className="stasis-bar-fill" style={{ width: `${fighterB.stats.logic}%`, "--bar-color": fighterB.color } as React.CSSProperties} />
-                  <div className="stasis-bar-glow" />
-                </div>
-                <div className="flex justify-between text-[8px] font-mono text-zinc-500 uppercase mt-1 w-full">
-                  <span>{"RHETORIC FLUIDITY"}</span>
-                  <span className="text-rose-400">{fighterB.stats.rhetoric}{"%"}</span>
-                </div>
-                <div className="stasis-bar-container w-full">
-                  <div className="stasis-bar-fill" style={{ width: `${fighterB.stats.rhetoric}%`, "--bar-color": fighterB.color } as React.CSSProperties} />
-                  <div className="stasis-bar-glow" />
-                </div>
-              </div>
+              <small className="mt-2 font-mono" style={{ color: fighterB.color }}>{fighterB.style}</small>
               <small className="mt-1 font-sans" style={{ color: fighterB.color }}>{fighterB.tagline}</small>
             </div>
 
@@ -314,10 +268,7 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="arena-stage relative rounded-[30px] p-3 sm:p-6 mb-8 border border-zinc-900/80 bg-zinc-950/20 backdrop-blur-md">
-            <div className="arena-corner arena-corner-tl" /><div className="arena-corner arena-corner-tr" />
-            <div className="arena-corner arena-corner-bl" /><div className="arena-corner arena-corner-br" />
-            
+          <section className="relative mb-8">
             <div className="grid md:grid-cols-[1fr_100px_1fr] gap-4 sm:gap-6 items-stretch">
               {/* Left Challenger Bay */}
               <div className="fighter-bay fighter-bay-left rounded-2xl p-6 relative overflow-hidden transition-all duration-300 border border-zinc-800/80 bg-gradient-to-b from-zinc-950/60 to-zinc-950/10 flex flex-col justify-between"
@@ -354,48 +305,6 @@ export default function Home() {
                     {fighterA.bio}
                   </p>
 
-                  {/* Telemetry Stats Panel */}
-                  <div className="space-y-3 mb-8 bg-zinc-950/60 border border-zinc-900 p-4 rounded-xl font-mono text-left">
-                    <div className="text-[9px] text-zinc-500 uppercase tracking-wider mb-2 font-bold">{"SYSTEM DIAGNOSTICS:"}</div>
-                    <div className="grid grid-cols-2 gap-3 text-[10px]">
-                      <div>
-                        <div className="flex justify-between text-zinc-500 mb-1">
-                          <span>{"LOGIC:"}</span>
-                          <span className="text-white font-semibold">{fighterA.stats.logic}{"%"}</span>
-                        </div>
-                        <div className="stasis-bar-container">
-                          <div className="stasis-bar-fill" style={{ width: `${fighterA.stats.logic}%`, "--bar-color": fighterA.color } as React.CSSProperties} />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-zinc-500 mb-1">
-                          <span>{"RHETORIC:"}</span>
-                          <span className="text-white font-semibold">{fighterA.stats.rhetoric}{"%"}</span>
-                        </div>
-                        <div className="stasis-bar-container">
-                          <div className="stasis-bar-fill" style={{ width: `${fighterA.stats.rhetoric}%`, "--bar-color": fighterA.color } as React.CSSProperties} />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-zinc-500 mb-1">
-                          <span>{"SPEED:"}</span>
-                          <span className="text-white font-semibold">{fighterA.stats.speed}{"%"}</span>
-                        </div>
-                        <div className="stasis-bar-container">
-                          <div className="stasis-bar-fill" style={{ width: `${fighterA.stats.speed}%`, "--bar-color": fighterA.color } as React.CSSProperties} />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-zinc-500 mb-1">
-                          <span>{"POWER:"}</span>
-                          <span className="text-white font-semibold">{fighterA.stats.power}{"%"}</span>
-                        </div>
-                        <div className="stasis-bar-container">
-                          <div className="stasis-bar-fill" style={{ width: `${fighterA.stats.power}%`, "--bar-color": fighterA.color } as React.CSSProperties} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Selection Chips */}
@@ -460,48 +369,6 @@ export default function Home() {
                     {fighterB.bio}
                   </p>
 
-                  {/* Telemetry Stats Panel */}
-                  <div className="space-y-3 mb-8 bg-zinc-950/60 border border-zinc-900 p-4 rounded-xl font-mono text-left">
-                    <div className="text-[9px] text-zinc-500 uppercase tracking-wider mb-2 font-bold">{"SYSTEM DIAGNOSTICS:"}</div>
-                    <div className="grid grid-cols-2 gap-3 text-[10px]">
-                      <div>
-                        <div className="flex justify-between text-zinc-500 mb-1">
-                          <span>{"LOGIC:"}</span>
-                          <span className="text-white font-semibold">{fighterB.stats.logic}{"%"}</span>
-                        </div>
-                        <div className="stasis-bar-container">
-                          <div className="stasis-bar-fill" style={{ width: `${fighterB.stats.logic}%`, "--bar-color": fighterB.color } as React.CSSProperties} />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-zinc-500 mb-1">
-                          <span>{"RHETORIC:"}</span>
-                          <span className="text-white font-semibold">{fighterB.stats.rhetoric}{"%"}</span>
-                        </div>
-                        <div className="stasis-bar-container">
-                          <div className="stasis-bar-fill" style={{ width: `${fighterB.stats.rhetoric}%`, "--bar-color": fighterB.color } as React.CSSProperties} />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-zinc-500 mb-1">
-                          <span>{"SPEED:"}</span>
-                          <span className="text-white font-semibold">{fighterB.stats.speed}{"%"}</span>
-                        </div>
-                        <div className="stasis-bar-container">
-                          <div className="stasis-bar-fill" style={{ width: `${fighterB.stats.speed}%`, "--bar-color": fighterB.color } as React.CSSProperties} />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-zinc-500 mb-1">
-                          <span>{"POWER:"}</span>
-                          <span className="text-white font-semibold">{fighterB.stats.power}{"%"}</span>
-                        </div>
-                        <div className="stasis-bar-container">
-                          <div className="stasis-bar-fill" style={{ width: `${fighterB.stats.power}%`, "--bar-color": fighterB.color } as React.CSSProperties} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Selection Chips */}
