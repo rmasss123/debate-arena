@@ -13,8 +13,7 @@ const FIGHTERS = [
     color: "#10b981",
     colorRgb: "16,185,129",
     style: "Rhetoric · Empathy",
-    model: "LLAMA-3-70B-INSTRUCT",
-    bio: "Builds constructive arguments grounded in human potential, progress, and ethical synergy.",
+    bio: "Finds opportunity in every obstacle. Argues from hope, progress, and the best of humanity.",
   },
   {
     id: "Critic",
@@ -23,8 +22,7 @@ const FIGHTERS = [
     color: "#f43f5e",
     colorRgb: "244,63,94",
     style: "Skepticism · Logic",
-    model: "MIXTRAL-8X22B",
-    bio: "Exposes logical fallacies, uncovers hidden agendas, and demands empirical rigor.",
+    bio: "Tears apart assumptions. Exposes logical gaps, unintended consequences, and hard truths.",
   },
   {
     id: "Philosopher",
@@ -33,8 +31,7 @@ const FIGHTERS = [
     color: "#8b5cf6",
     colorRgb: "139,92,246",
     style: "Dialectic · Synthesis",
-    model: "CLAUDE-3.5-SONNET",
-    bio: "Evaluates ethical implications, historical contexts, and existential truths.",
+    bio: "Reframes the question itself. Operates from first principles, ethics, and existential clarity.",
   },
 ] as const;
 
@@ -42,16 +39,24 @@ function visualValue(index: number, salt: number) {
   return ((index * 137 + salt * 271) % 997) / 997;
 }
 
-const HOME_PARTICLES = Array.from({ length: 10 }, (_, i) => ({
+const HOME_PARTICLES = Array.from({ length: 12 }, (_, i) => ({
   id: i,
   x: visualValue(i, 1) * 100,
-  size: visualValue(i, 2) * 1.5 + 0.5,
-  duration: visualValue(i, 3) * 20 + 15,
-  delay: visualValue(i, 4) * 15,
-  drift: (visualValue(i, 5) - 0.5) * 80,
-  opacity: visualValue(i, 6) * 0.15 + 0.04,
-  color: ["#7c3aed", "#6d28d9", "#4f46e5"][Math.floor(visualValue(i, 7) * 3)],
+  size: visualValue(i, 2) * 2 + 0.5,
+  duration: visualValue(i, 3) * 22 + 14,
+  delay: visualValue(i, 4) * 16,
+  drift: (visualValue(i, 5) - 0.5) * 90,
+  opacity: visualValue(i, 6) * 0.12 + 0.03,
+  color: ["#7c3aed", "#6d28d9", "#4f46e5", "#db2777"][Math.floor(visualValue(i, 7) * 4)],
 }));
+
+const TOPIC_PROMPTS = [
+  "AI deserves legal rights",
+  "Privacy is already dead",
+  "Social media does more harm than good",
+  "Mars colonization should be humanity's priority",
+  "Universal basic income will save us",
+];
 
 const Particles = React.memo(function Particles() {
   return (
@@ -69,11 +74,48 @@ const Particles = React.memo(function Particles() {
   );
 });
 
+function FighterCard({
+  fighter,
+  selected,
+  disabled,
+  side,
+  onClick,
+}: {
+  fighter: typeof FIGHTERS[number];
+  selected: boolean;
+  disabled: boolean;
+  side: "A" | "B";
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={`Pick ${fighter.id} as fighter ${side}`}
+      className="fighter-card"
+      style={{
+        "--fc-color": fighter.color,
+        "--fc-rgb": fighter.colorRgb,
+        opacity: disabled ? 0.22 : 1,
+      } as React.CSSProperties}
+      data-selected={selected}
+    >
+      {selected && <div className="fighter-card-selected-ring" aria-hidden />}
+      <div className="fighter-card-emoji">{fighter.emoji}</div>
+      <div className="fighter-card-name">{fighter.id}</div>
+      <div className="fighter-card-tagline" style={{ color: fighter.color }}>{fighter.tagline}</div>
+      <div className="fighter-card-bio">{fighter.bio}</div>
+      <div className="fighter-card-style">{fighter.style}</div>
+    </button>
+  );
+}
+
 export default function Home() {
   const router = useRouter();
   const [topic, setTopic] = useState("");
-  const [agentA, setAgentA] = useState("Optimist");
-  const [agentB, setAgentB] = useState("Critic");
+  const [agentA, setAgentA] = useState<string>("Optimist");
+  const [agentB, setAgentB] = useState<string>("Critic");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [loadingStep, setLoadingStep] = useState(0);
@@ -82,21 +124,18 @@ export default function Home() {
   const fighterA = FIGHTERS.find((f) => f.id === agentA) ?? FIGHTERS[0];
   const fighterB = FIGHTERS.find((f) => f.id === agentB) ?? FIGHTERS[1];
 
-  const topicPrompts = [
-    "AI deserves legal rights",
-    "Privacy is already dead",
-    "Mars should be humanity's priority",
-  ];
+  const charCount = topic.length;
+  const charOver = charCount > 480;
 
   useEffect(() => {
     if (!loading) return;
     const messages = [
       `[SYS] Connecting to ${API}...`,
-      `[SYS] Loading ${fighterA.id} (${fighterA.model})`,
-      `[SYS] Loading ${fighterB.id} (${fighterB.model})`,
-      `[SYS] Topic locked: "${topic.trim()}"`,
-      `[SYS] Priming Groq inference...`,
-      `[SYS] Stream ready — launching debate`,
+      `[CORE_01] Loading ${fighterA.id} — STATUS: READY`,
+      `[CORE_02] Loading ${fighterB.id} — STATUS: READY`,
+      `[LOCK] Topic: "${topic.trim()}"`,
+      `[GROQ] Priming inference shards...`,
+      `[ARENA] Stream ready — launching debate`,
     ];
     const interval = setInterval(() => {
       setLoadingStep((prev) => {
@@ -135,164 +174,168 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden fade-in" style={{ background: "#050508" }}>
+    <div className="min-h-screen flex flex-col overflow-x-hidden" style={{ background: "#050508" }}>
       <Particles />
 
-      {/* ── Minimal nav ── */}
+      {/* Background orbs */}
+      <div aria-hidden className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="home-orb home-orb-a" />
+        <div className="home-orb home-orb-b" />
+        <div className="home-orb home-orb-c" />
+      </div>
+
+      {/* Nav */}
       <nav className="home-nav relative z-30">
         <span className="home-brand">Debate Arena</span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <span className="arena-live-dot" />
           <span className="text-[10px] font-mono text-rose-500 font-bold uppercase tracking-widest">Live</span>
-          <span className="text-zinc-800 mx-1">·</span>
+          <span className="home-nav-sep" />
           <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">Groq · 3 rounds</span>
         </div>
       </nav>
 
-      {/* ── Hero image — full width, title overlaid ── */}
-      <div className="fight-viewport relative z-10 mx-3 sm:mx-6 mt-4 rounded-[28px]">
-        <div className="fight-image" aria-hidden />
-        <div className="fight-vignette" aria-hidden />
-
-        {/* Centered title */}
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6">
-          <h1 className="arena-wordmark select-none" aria-label="Debate Arena">
-            <span className="arena-wordmark-solid">DEBATE</span>
-            <span className="arena-wordmark-outline">ARENA</span>
-          </h1>
-          <p className="mt-4 text-sm text-white/40 max-w-xs leading-relaxed hidden sm:block">
-            Pit two AI minds against each other on any topic
-          </p>
+      {/* Hero */}
+      <div className="relative z-10 text-center pt-14 pb-8 px-4">
+        <div className="home-eyebrow">
+          <span className="home-eyebrow-dot" />
+          AI Debate Engine
         </div>
-
-        {/* Fighter HUDs */}
-        <div className="fight-hud fight-hud-left z-20">
-          <span className="fight-hud-index text-emerald-400 font-mono tracking-widest flex items-center gap-1.5">
-            <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-            ONLINE
-          </span>
-          <strong>{fighterA.emoji} {fighterA.id}</strong>
-          <small className="mt-1 font-sans" style={{ color: fighterA.color }}>{fighterA.tagline}</small>
-        </div>
-        <div className="fight-hud fight-hud-right z-20">
-          <span className="fight-hud-index text-rose-400 font-mono tracking-widest flex items-center gap-1.5 justify-end">
-            ONLINE
-            <span className="w-1 h-1 rounded-full bg-rose-500 animate-pulse" />
-          </span>
-          <strong>{fighterB.id} {fighterB.emoji}</strong>
-          <small className="mt-1 font-sans" style={{ color: fighterB.color }}>{fighterB.tagline}</small>
-        </div>
-        <div className="fight-impact z-20" aria-hidden>
-          <span className="fight-impact-ring fight-impact-ring-a" />
-          <span className="fight-impact-ring fight-impact-ring-b" />
-          <b className="font-mono">VS</b>
-        </div>
-        <div className="fight-readout z-20" aria-hidden>
-          <span>{fighterA.model}</span><i /><span>{fighterB.model}</span>
-        </div>
+        <h1 className="home-title">
+          Let AI<br />
+          <span className="home-title-accent">settle it.</span>
+        </h1>
+        <p className="home-subtitle">
+          Pick two AI minds, give them a topic, watch them clash.
+        </p>
       </div>
 
-      {/* ── Main form ── */}
-      <main className="relative z-10 flex-1 w-full max-w-2xl mx-auto px-4 py-8 flex flex-col gap-8">
+      {/* Main form */}
+      <main className="relative z-10 flex-1 w-full max-w-3xl mx-auto px-4 pb-16 flex flex-col gap-10">
 
         {loading ? (
           /* Loading terminal */
-          <div className="bg-[#030306] border border-zinc-900/80 rounded-2xl p-5 font-mono">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-bold tracking-widest text-emerald-500 uppercase">Launching debate…</span>
+          <div className="home-terminal">
+            <div className="home-terminal-header">
+              <span className="home-terminal-dot" style={{ background: "#ef4444" }} />
+              <span className="home-terminal-dot" style={{ background: "#f59e0b" }} />
+              <span className="home-terminal-dot" style={{ background: "#10b981" }} />
+              <span className="text-[10px] font-mono font-bold tracking-widest text-emerald-500 uppercase ml-2">
+                Launching arena…
+              </span>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 mt-4">
               {terminalLogs.map((log, i) => (
-                <div key={i} className="loading-terminal-log text-xs">{log}</div>
+                <div key={i} className="loading-terminal-log">{log}</div>
               ))}
               {loadingStep < 5 && (
-                <div className="loading-terminal-log text-xs flex items-center gap-1 text-emerald-400/50">
+                <div className="loading-terminal-log flex items-center gap-1 text-emerald-400/40">
                   <span>&gt;_ connecting</span>
-                  <span className="inline-block w-1.5 h-3 bg-emerald-400 animate-pulse" />
+                  <span className="inline-block w-1.5 h-3.5 bg-emerald-500 animate-pulse" />
                 </div>
               )}
             </div>
           </div>
         ) : (
           <>
-            {/* ── Topic input ── */}
-            <div>
-              <label htmlFor="debate-topic" className="block text-sm font-medium text-zinc-300 mb-3">
+            {/* Topic input */}
+            <div className="home-topic-section">
+              <label htmlFor="debate-topic" className="home-section-label">
                 What should they debate?
               </label>
-              <textarea
-                id="debate-topic"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleStart(); }}
-                placeholder="Drop a hot take, a hard question, or a controversial statement…"
-                rows={3}
-                maxLength={500}
-                className="home-textarea"
-              />
-              <div className="flex flex-wrap gap-2 mt-3">
-                {topicPrompts.map((prompt) => (
-                  <button key={prompt} type="button" onClick={() => setTopic(prompt)}
-                    className="home-suggestion">
-                    {prompt}
-                  </button>
-                ))}
+              <div className="home-topic-wrap">
+                <textarea
+                  id="debate-topic"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleStart(); }}
+                  placeholder="Drop a hot take, a hard question, or a controversial statement…"
+                  rows={3}
+                  maxLength={500}
+                  className="home-textarea"
+                />
+                <div className="home-topic-footer">
+                  <div className="flex flex-wrap gap-2">
+                    {TOPIC_PROMPTS.map((prompt) => (
+                      <button key={prompt} type="button" onClick={() => setTopic(prompt)}
+                        className="home-suggestion">
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                  <span className={`home-char-count ${charOver ? "home-char-count-warn" : ""}`}>
+                    {charCount}/500
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* ── Fighter picker ── */}
+            {/* Fighter picker */}
             <div>
-              <p className="text-xs text-zinc-600 font-mono uppercase tracking-widest mb-4">Choose your fighters</p>
-              <div className="home-picker">
+              <p className="home-section-label mb-5">Choose your fighters</p>
+              <div className="home-matchup">
 
                 {/* Side A */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-zinc-700 font-mono uppercase tracking-wider mb-2">Side A</p>
-                  <div className="flex gap-2">
+                <div className="home-side">
+                  <p className="home-side-label">Side A</p>
+                  <div className="home-fighter-grid">
                     {FIGHTERS.map((f) => (
-                      <button key={f.id} type="button"
-                        onClick={() => { if (agentB !== f.id) setAgentA(f.id); }}
+                      <FighterCard
+                        key={f.id}
+                        fighter={f}
+                        selected={agentA === f.id}
                         disabled={agentB === f.id}
-                        aria-label={`Pick ${f.id} as fighter A`}
-                        className={`home-fighter-btn ${agentA === f.id ? "home-fighter-btn-active" : ""}`}
-                        style={{ "--chip-color": f.color } as React.CSSProperties}>
-                        <span>{f.emoji}</span>
-                        <span className="hidden sm:inline text-[11px]">{f.id}</span>
-                      </button>
+                        side="A"
+                        onClick={() => { if (agentB !== f.id) setAgentA(f.id); }}
+                      />
                     ))}
                   </div>
-                  <p className="text-[11px] text-zinc-600 mt-2 leading-snug">{fighterA.bio}</p>
                 </div>
 
-                <div className="home-vs-pip flex-shrink-0">VS</div>
+                {/* VS divider */}
+                <div className="home-vs-divider" aria-hidden>
+                  <div className="home-vs-line" />
+                  <div className="home-vs-core">VS</div>
+                  <div className="home-vs-line" />
+                </div>
 
                 {/* Side B */}
-                <div className="flex-1 min-w-0 flex flex-col items-end">
-                  <p className="text-[10px] text-zinc-700 font-mono uppercase tracking-wider mb-2">Side B</p>
-                  <div className="flex gap-2">
+                <div className="home-side">
+                  <p className="home-side-label">Side B</p>
+                  <div className="home-fighter-grid">
                     {FIGHTERS.map((f) => (
-                      <button key={f.id} type="button"
-                        onClick={() => { if (agentA !== f.id) setAgentB(f.id); }}
+                      <FighterCard
+                        key={f.id}
+                        fighter={f}
+                        selected={agentB === f.id}
                         disabled={agentA === f.id}
-                        aria-label={`Pick ${f.id} as fighter B`}
-                        className={`home-fighter-btn ${agentB === f.id ? "home-fighter-btn-active" : ""}`}
-                        style={{ "--chip-color": f.color } as React.CSSProperties}>
-                        <span>{f.emoji}</span>
-                        <span className="hidden sm:inline text-[11px]">{f.id}</span>
-                      </button>
+                        side="B"
+                        onClick={() => { if (agentA !== f.id) setAgentB(f.id); }}
+                      />
                     ))}
                   </div>
-                  <p className="text-[11px] text-zinc-600 mt-2 text-right leading-snug">{fighterB.bio}</p>
                 </div>
+              </div>
+
+              {/* Selected matchup summary */}
+              <div className="home-matchup-summary">
+                <span style={{ color: fighterA.color }}>{fighterA.emoji} {fighterA.id}</span>
+                <span className="text-zinc-700 mx-2 font-mono font-black italic">vs</span>
+                <span style={{ color: fighterB.color }}>{fighterB.emoji} {fighterB.id}</span>
               </div>
             </div>
 
-            {/* ── Start button ── */}
-            <button type="button" onClick={handleStart} disabled={loading || !topic.trim()}
-              className="home-start-btn">
-              Start the debate →
-            </button>
+            {/* Start button */}
+            <div>
+              <button type="button" onClick={handleStart} disabled={loading || !topic.trim()}
+                className="home-start-btn">
+                <span>Start the debate</span>
+                <span className="home-start-arrow">→</span>
+              </button>
+              <p className="text-center text-[10px] font-mono text-zinc-700 mt-3 tracking-wider uppercase">
+                ⌘ + Enter to launch
+              </p>
+            </div>
 
             {error && (
               <div className="text-rose-400 text-sm p-3 rounded-xl border border-rose-950/30 bg-rose-950/10 flex items-center gap-2 font-mono">
@@ -304,8 +347,16 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="relative z-10 text-center pb-6 text-[11px] text-zinc-800 font-mono">
-        Powered by Groq · Live SSE streaming · 3 rounds per debate
+      <footer className="relative z-10 text-center pb-6">
+        <div className="home-feature-strip">
+          <span>Live SSE Streaming</span>
+          <span className="home-feature-dot" />
+          <span>Groq Inference</span>
+          <span className="home-feature-dot" />
+          <span>3 Rounds</span>
+          <span className="home-feature-dot" />
+          <span>Argument Scoring</span>
+        </div>
       </footer>
     </div>
   );
