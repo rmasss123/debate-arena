@@ -73,7 +73,7 @@ function RoundOverlay({ round, show }: { round: number; show: boolean }) {
   );
 }
 
-interface ArgData { argument_id: string; agent: string; round: number; content: string; }
+interface ArgData { argument_id: string; agent: string; round: number; content: string; impact_score?: number; }
 
 interface SavedDebate {
   debate: { topic: string; agent_a: string; agent_b: string };
@@ -152,6 +152,18 @@ function ArgCard({ arg, side, canVote, onVote, voteLoading }: {
         </div>
         <div className="arg-round-badge">R{arg.round}</div>
       </div>
+
+      {/* Impact score */}
+      {arg.impact_score != null && arg.impact_score > 0 && (
+        <div className="arg-impact-row">
+          <span className="arg-impact-label">IMPACT</span>
+          <div className="arg-impact-bar">
+            <div className="arg-impact-fill"
+              style={{ width: `${arg.impact_score * 10}%`, background: f.color }} />
+          </div>
+          <span className="arg-impact-score" style={{ color: f.color }}>{arg.impact_score}/10</span>
+        </div>
+      )}
 
       {/* Body */}
       <div className="arg-card-body">{arg.content}</div>

@@ -228,6 +228,7 @@ export default function Home() {
                 onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleStart(); }}
                 placeholder="Drop a hot take, a hard question, or a controversial statement…"
                 rows={3}
+                maxLength={500}
                 className="home-textarea"
               />
               <div className="flex flex-wrap gap-2 mt-3">

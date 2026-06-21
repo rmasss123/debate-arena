@@ -1,11 +1,14 @@
 import os
+import re
+from typing import Optional
+
 from groq import Groq
 
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 MODEL = "llama-3.1-8b-instant"
 
-AGENT_PERSONAS = {
+AGENT_PERSONAS: dict[str, dict[str, str]] = {
     "Optimist": {
         "base": (
             "You are the Optimist debater. You always argue for the positive, hopeful, "
@@ -90,7 +93,7 @@ def generate_argument(
     topic: str,
     round_number: int,
     previous_arguments: list,
-    vote_feedback: dict = None,
+    vote_feedback: Optional[dict] = None,
 ) -> str:
     if agent_name not in AGENT_PERSONAS:
         raise ValueError(f"Unknown agent: {agent_name}. Must be one of {list(AGENT_PERSONAS.keys())}")
@@ -113,7 +116,6 @@ def generate_argument(
 
 def score_argument(content: str, topic: str) -> int:
     """Score an argument 1-10 for rhetorical strength. Returns a single integer."""
-    import re
     try:
         response = client.chat.completions.create(
             model=MODEL,

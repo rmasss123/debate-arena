@@ -706,8 +706,44 @@ body {
   flex-shrink: 0;
 }
 
+.arg-impact-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px 0;
+}
+
+.arg-impact-label {
+  font: 700 8px var(--font-mono);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #3f3f46;
+  flex-shrink: 0;
+}
+
+.arg-impact-bar {
+  flex: 1;
+  height: 3px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.arg-impact-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 6px currentColor;
+}
+
+.arg-impact-score {
+  font: 800 9px var(--font-mono);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
 .arg-card-body {
-  padding: 16px 18px;
+  padding: 14px 18px 16px;
   font-size: 14px;
   line-height: 1.82;
   color: #d4d4d8;
