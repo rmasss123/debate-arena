@@ -5,10 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
-const FIGHTER_CONFIG: Record<string, { color: string; glow: string; dimBg: string; border: string; emoji: string; tagline: string }> = {
-  Optimist: { color: "#10b981", glow: "rgba(16,185,129,0.4)", dimBg: "rgba(16,185,129,0.06)", border: "rgba(16,185,129,0.25)", emoji: "☀️", tagline: "The Eternal Believer" },
-  Critic:   { color: "#f43f5e", glow: "rgba(244,63,94,0.4)",  dimBg: "rgba(244,63,94,0.06)",  border: "rgba(244,63,94,0.25)",  emoji: "💀", tagline: "The Devil's Advocate" },
-  Philosopher: { color: "#8b5cf6", glow: "rgba(139,92,246,0.4)", dimBg: "rgba(139,92,246,0.06)", border: "rgba(139,92,246,0.25)", emoji: "👁️", tagline: "The Truth Seeker" },
+const FIGHTER_CONFIG: Record<string, { color: string; colorRgb: string; glow: string; dimBg: string; border: string; emoji: string; tagline: string }> = {
+  Optimist:    { color: "#10b981", colorRgb: "16,185,129",  glow: "rgba(16,185,129,0.4)",  dimBg: "rgba(16,185,129,0.06)",  border: "rgba(16,185,129,0.25)",  emoji: "☀️", tagline: "The Eternal Believer" },
+  Critic:      { color: "#f43f5e", colorRgb: "244,63,94",   glow: "rgba(244,63,94,0.4)",   dimBg: "rgba(244,63,94,0.06)",   border: "rgba(244,63,94,0.25)",   emoji: "💀", tagline: "The Devil's Advocate" },
+  Philosopher: { color: "#8b5cf6", colorRgb: "139,92,246",  glow: "rgba(139,92,246,0.4)",  dimBg: "rgba(139,92,246,0.06)",  border: "rgba(139,92,246,0.25)",  emoji: "👁️", tagline: "The Truth Seeker" },
 };
 
 function visualValue(index: number, salt: number) {
@@ -37,7 +37,10 @@ const CONFETTI_PIECES = Array.from({ length: 60 }, (_, i) => ({
 }));
 
 function getFighter(agent: string) {
-  return FIGHTER_CONFIG[agent] ?? { color: "#7c3aed", glow: "rgba(124,58,237,0.4)", dimBg: "rgba(124,58,237,0.06)", border: "rgba(124,58,237,0.25)", emoji: "🤖", tagline: "Unknown" };
+  return FIGHTER_CONFIG[agent] ?? {
+    color: "#7c3aed", colorRgb: "124,58,237", glow: "rgba(124,58,237,0.4)",
+    dimBg: "rgba(124,58,237,0.06)", border: "rgba(124,58,237,0.25)", emoji: "🤖", tagline: "Unknown",
+  };
 }
 
 const Particles = React.memo(function Particles() {
@@ -45,9 +48,9 @@ const Particles = React.memo(function Particles() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden>
       {DEBATE_PARTICLES.map((p) => (
         <div key={p.id} className="absolute bottom-0 rounded-full"
-          style={{ left:`${p.x}%`, width:p.size, height:p.size, backgroundColor:p.color, opacity:0.12,
-            animation:`particleRise ${p.duration}s ${p.delay}s linear infinite`,
-            ["--drift" as string]:`${p.drift}px` }} />
+          style={{ left: `${p.x}%`, width: p.size, height: p.size, backgroundColor: p.color, opacity: 0.12,
+            animation: `particleRise ${p.duration}s ${p.delay}s linear infinite`,
+            ["--drift" as string]: `${p.drift}px` }} />
       ))}
     </div>
   );
@@ -57,12 +60,11 @@ function RoundOverlay({ round, show }: { round: number; show: boolean }) {
   if (!show) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
-      style={{ background: "rgba(5,5,8,0.5)" }}>
+      style={{ background: "rgba(5,5,8,0.55)" }}>
       <div className="round-announce text-center">
-        <p className="text-xs font-bold tracking-[0.5em] uppercase mb-2"
-          style={{ color: "#7c3aed" }}>Round</p>
+        <p className="text-xs font-bold tracking-[0.5em] uppercase mb-2" style={{ color: "#7c3aed" }}>Round</p>
         <p className="font-black text-white"
-          style={{ fontSize: "clamp(6rem, 20vw, 14rem)", lineHeight: 1, letterSpacing: "-0.04em",
+          style={{ fontSize: "clamp(6rem,20vw,14rem)", lineHeight: 1, letterSpacing: "-0.04em",
             textShadow: "0 0 80px rgba(124,58,237,0.6)" }}>
           {round}
         </p>
@@ -79,6 +81,46 @@ interface SavedDebate {
   vote: { winner_agent: string } | null;
 }
 
+function BootLoader({ agents }: { agents: string[] }) {
+  const lines = [
+    "[ARENA] STREAM ESTABLISHED — COGNITIVE FEED ACTIVE",
+    agents[0] ? `[CORE_01] MOUNTING: ${agents[0].toUpperCase()} — STATUS: READY` : "[CORE_01] DETECTING GLADIATOR PROFILE...",
+    agents[1] ? `[CORE_02] MOUNTING: ${agents[1].toUpperCase()} — STATUS: READY` : "[CORE_02] DETECTING GLADIATOR PROFILE...",
+    "[MATRIX] CONFLICT TOPOLOGY INITIALIZED",
+    "[GROQ] INFERENCE SHARDS PRIMED — AWAITING FIRST TRANSMISSION...",
+  ];
+  return (
+    <div className="debate-boot">
+      <div className="boot-terminal">
+        <div className="boot-header">
+          <span className="boot-dot" style={{ background: "#ef4444" }} />
+          <span className="boot-dot" style={{ background: "#f59e0b" }} />
+          <span className="boot-dot" style={{ background: "#10b981" }} />
+          <span className="boot-title">ARENA BOOT SEQUENCE</span>
+        </div>
+        {lines.map((line, i) => (
+          <div key={i} className="boot-line" style={{ animationDelay: `${i * 0.35}s` }}>{line}</div>
+        ))}
+        <div className="mt-3"><span className="boot-cursor" /></div>
+      </div>
+    </div>
+  );
+}
+
+function RoundBanner({ round }: { round: number }) {
+  return (
+    <div className="round-banner">
+      <div className="round-banner-line" />
+      <div className="round-banner-track">
+        <span className="round-banner-label">ROUND</span>
+        <span className="round-banner-num">{String(round).padStart(2, "0")}</span>
+        <span className="round-banner-of">{"/ 03"}</span>
+      </div>
+      <div className="round-banner-line round-banner-line-right" />
+    </div>
+  );
+}
+
 function ArgCard({ arg, side, canVote, onVote, voteLoading }: {
   arg: ArgData; side: "left" | "right"; canVote: boolean; onVote: (a: string) => void; voteLoading: boolean;
 }) {
@@ -86,52 +128,93 @@ function ArgCard({ arg, side, canVote, onVote, voteLoading }: {
   const [voted, setVoted] = useState(false);
 
   return (
-    <div className={`${side === "left" ? "slide-left" : "slide-right"} rounded-2xl overflow-hidden transition-all duration-300 max-w-full`}
-      style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.11)")}
-      onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}>
+    <div className={`arg-card arg-card-${side}`}
+      style={{
+        "--arg-color": f.color,
+        "--arg-color-rgb": f.colorRgb,
+        "--arg-glow": f.glow,
+        "--arg-dimbg": f.dimBg,
+        "--arg-border": f.border,
+        "--slam-x": side === "left" ? "-32px" : "32px",
+        animation: "argSlam 0.5s cubic-bezier(0.16,1,0.3,1) both",
+      } as React.CSSProperties}>
+
+      {/* Ambient glow */}
+      <div className="arg-card-glow"
+        style={{ background: `radial-gradient(ellipse at ${side === "left" ? "0% 0%" : "100% 0%"}, rgba(${f.colorRgb},0.1), transparent 60%)` }} />
 
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0"
-            style={{ background: f.dimBg, border: `1px solid ${f.border}` }}>
-            {f.emoji}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold leading-none" style={{ color: "#ffffff" }}>{arg.agent}</p>
-            <p className="text-[11px] mt-0.5 truncate" style={{ color: f.color }}>{f.tagline}</p>
-          </div>
+      <div className="arg-card-header">
+        <div className="arg-fighter-avatar">{f.emoji}</div>
+        <div className="arg-fighter-info">
+          <div className="arg-fighter-name">{arg.agent}</div>
+          <div className="arg-fighter-tag" style={{ color: f.color }}>{f.tagline}</div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(255,255,255,0.05)", color: "#71717a" }}>R{arg.round}</span>
-          {canVote && !voted && (
-            <button onClick={() => { onVote(arg.agent); setVoted(true); }} disabled={voteLoading}
-              className="text-[11px] font-medium px-3 py-1 rounded-full transition-all duration-200 disabled:opacity-40"
-              style={{ background: "rgba(255,255,255,0.05)", color: "#a1a1aa", border: "1px solid rgba(255,255,255,0.08)" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "white"; e.currentTarget.style.borderColor = f.border; e.currentTarget.style.boxShadow = `0 0 12px ${f.glow}`; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "#a1a1aa"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}>
-              👍 Vote
-            </button>
-          )}
-          {voted && (
-            <span className="text-[11px] font-semibold px-3 py-1 rounded-full"
-              style={{ background: f.dimBg, color: f.color, border: `1px solid ${f.border}` }}>
-              ✓ Voted
-            </span>
-          )}
-        </div>
+        <div className="arg-round-badge">R{arg.round}</div>
       </div>
 
       {/* Body */}
-      <div className="px-4 py-4">
-        <p style={{ color: "#e4e4e7", fontSize: "15px", lineHeight: "1.75" }}>
-          {arg.content}
-        </p>
-      </div>
+      <div className="arg-card-body">{arg.content}</div>
+
+      {/* Vote footer */}
+      {canVote && (
+        <div className="arg-card-footer">
+          {!voted ? (
+            <button className="arg-vote-btn" disabled={voteLoading}
+              onClick={() => { onVote(arg.agent); setVoted(true); }}>
+              ↑ VOTE THIS ARGUMENT
+            </button>
+          ) : (
+            <span className="arg-voted-badge">✓ VOTED</span>
+          )}
+        </div>
+      )}
     </div>
+  );
+}
+
+function ClashGrid({ group, agents, canVote, onVote, voteLoading }: {
+  group: ArgData[];
+  agents: string[];
+  canVote: boolean;
+  onVote: (a: string) => void;
+  voteLoading: boolean;
+}) {
+  const leftArgs  = group.filter((a) => agents.indexOf(a.agent) === 0);
+  const rightArgs = group.filter((a) => agents.indexOf(a.agent) === 1);
+
+  return (
+    <>
+      {/* Mobile: chronological single column */}
+      <div className="flex flex-col gap-4 md:hidden">
+        {group.map((arg) => (
+          <ArgCard key={arg.argument_id} arg={arg}
+            side={agents.indexOf(arg.agent) === 0 ? "left" : "right"}
+            canVote={canVote} onVote={onVote} voteLoading={voteLoading} />
+        ))}
+      </div>
+
+      {/* Desktop: split columns */}
+      <div className="clash-grid hidden md:grid">
+        <div className="flex flex-col gap-5">
+          {leftArgs.map((arg) => (
+            <ArgCard key={arg.argument_id} arg={arg} side="left"
+              canVote={canVote} onVote={onVote} voteLoading={voteLoading} />
+          ))}
+        </div>
+        <div className="clash-spine">
+          <div className="clash-spine-line" />
+          <div className="clash-spine-pip" />
+          <div className="clash-spine-line" />
+        </div>
+        <div className="flex flex-col gap-5">
+          {rightArgs.map((arg) => (
+            <ArgCard key={arg.argument_id} arg={arg} side="right"
+              canVote={canVote} onVote={onVote} voteLoading={voteLoading} />
+          ))}
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -140,10 +223,10 @@ function Confetti() {
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
       {CONFETTI_PIECES.map((p) => (
         <div key={p.id} className="absolute top-0"
-          style={{ left:`${p.x}%`, width:p.size, height:p.isRect?p.size*2.5:p.size,
-            backgroundColor:p.color, borderRadius:p.isRect?"2px":"50%",
-            transform:`rotate(${p.rotate}deg)`,
-            animation:`confettiFall ${p.duration}s ${p.delay}s ease-in forwards` }} />
+          style={{ left: `${p.x}%`, width: p.size, height: p.isRect ? p.size * 2.5 : p.size,
+            backgroundColor: p.color, borderRadius: p.isRect ? "2px" : "50%",
+            transform: `rotate(${p.rotate}deg)`,
+            animation: `confettiFall ${p.duration}s ${p.delay}s ease-in forwards` }} />
       ))}
     </div>
   );
@@ -157,32 +240,28 @@ export default function DebatePage() {
   const [agents, setAgents] = useState<string[]>([]);
   const [args, setArgs] = useState<ArgData[]>([]);
   const [summary, setSummary] = useState("");
-  const [status, setStatus] = useState<"idle"|"streaming"|"done"|"restored"|"error">("idle");
-  const [sessionMode, setSessionMode] = useState<"checking"|"prompt"|"live"|"restored">("checking");
+  const [status, setStatus] = useState<"idle" | "streaming" | "done" | "restored" | "error">("idle");
+  const [sessionMode, setSessionMode] = useState<"checking" | "prompt" | "live" | "restored">("checking");
   const [savedDebate, setSavedDebate] = useState<SavedDebate | null>(null);
   const [error, setError] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
   const [totalVotes, setTotalVotes] = useState(0);
   const [voteLoading, setVoteLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-
   const [showRound, setShowRound] = useState(false);
   const [roundNum, setRoundNum] = useState(1);
 
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const bottomRef      = useRef<HTMLDivElement>(null);
   const sessionChecked = useRef(false);
-  const streamStarted = useRef(false);
+  const streamStarted  = useRef(false);
   const announcedRound = useRef(0);
-  const roundTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const roundTimer     = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Auto scroll only when new arg arrives
   const argsLen = args.length;
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [argsLen, summary]);
 
-  // A newly created debate starts immediately. Existing URLs and reloads ask
-  // whether the user wants the persisted session or a clean debate.
   useEffect(() => {
     if (!id || sessionChecked.current) return;
     sessionChecked.current = true;
@@ -197,12 +276,10 @@ export default function DebatePage() {
           setSessionMode("live");
           return;
         }
-
         const response = await fetch(`${API}/debate/${id}`);
         if (!response.ok) throw new Error("Debate not found");
         const data: SavedDebate = await response.json();
         const wasOpened = sessionStorage.getItem(`debate-arena:seen:${id}`) === "true";
-
         if (wasOpened || data.arguments.length > 0) {
           setSavedDebate(data);
           setSessionMode("prompt");
@@ -216,11 +293,9 @@ export default function DebatePage() {
         setSessionMode("restored");
       }
     }
-
     void inspectSession();
   }, [id]);
 
-  // SSE with StrictMode guard
   useEffect(() => {
     if (!id || sessionMode !== "live" || streamStarted.current) return;
     streamStarted.current = true;
@@ -321,8 +396,11 @@ export default function DebatePage() {
     return groups;
   }, [args]);
 
-  const truncatedTopic = topic.length > 55 ? topic.slice(0, 52) + "…" : topic;
+  const truncatedTopic = topic.length > 60 ? topic.slice(0, 57) + "…" : topic;
+  const fighterA = agents[0] ? getFighter(agents[0]) : null;
+  const fighterB = agents[1] ? getFighter(agents[1]) : null;
 
+  /* ── CHECKING ── */
   if (sessionMode === "checking") {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#050508" }}>
@@ -332,10 +410,11 @@ export default function DebatePage() {
     );
   }
 
+  /* ── TIMELINE FORK ── */
   if (sessionMode === "prompt") {
     const savedArguments = savedDebate?.arguments.length ?? 0;
-    const savedRounds = new Set(savedDebate?.arguments.map((argument) => argument.round_number)).size;
-    const savedTopic = savedDebate?.debate.topic ?? "Your previous debate";
+    const savedRounds    = new Set(savedDebate?.arguments.map((a) => a.round_number)).size;
+    const savedTopic     = savedDebate?.debate.topic ?? "Your previous debate";
 
     return (
       <div className="timeline-fork min-h-screen flex items-center justify-center px-4 py-10 overflow-hidden" style={{ background: "#050508" }}>
@@ -351,7 +430,7 @@ export default function DebatePage() {
               <span className="text-[10px] font-bold tracking-[0.28em] uppercase">Timeline anomaly detected</span>
             </div>
             <h1 className="font-black text-white tracking-[-0.05em] leading-[0.9]"
-              style={{ fontSize: "clamp(3rem, 8vw, 6.5rem)" }}>
+              style={{ fontSize: "clamp(3rem,8vw,6.5rem)" }}>
               Choose your<br /><span className="timeline-gradient">reality.</span>
             </h1>
             <p className="mt-5 text-sm sm:text-base" style={{ color: "#71717a" }}>
@@ -374,7 +453,7 @@ export default function DebatePage() {
               <div className="relative z-10 my-7 rounded-2xl p-4"
                 style={{ background: "rgba(0,0,0,0.28)", border: "1px solid rgba(167,139,250,0.15)" }}>
                 <p className="text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: "#71717a" }}>Recovered topic</p>
-                <p className="text-sm text-zinc-200 line-clamp-2">“{savedTopic}”</p>
+                <p className="text-sm text-zinc-200 line-clamp-2">&ldquo;{savedTopic}&rdquo;</p>
                 <div className="grid grid-cols-3 gap-2 mt-4">
                   <div><strong className="block text-lg text-white">{savedArguments}</strong><span className="text-[9px] uppercase tracking-wider text-zinc-600">Arguments</span></div>
                   <div><strong className="block text-lg text-white">{savedRounds}</strong><span className="text-[9px] uppercase tracking-wider text-zinc-600">Rounds</span></div>
@@ -430,135 +509,127 @@ export default function DebatePage() {
     );
   }
 
+  /* ── LIVE / RESTORED ── */
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#050508" }}>
       <Particles />
-
-      {/* Overlays */}
       <RoundOverlay round={roundNum} show={showRound} />
       {showConfetti && <Confetti />}
 
-      {/* Header */}
-      <header className="sticky top-0 z-20 flex-shrink-0"
-        style={{ background: "rgba(5,5,8,0.92)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="mx-auto max-w-3xl flex items-center justify-between px-4 py-3 gap-4">
-          <button onClick={() => router.push("/")}
-            className="text-zinc-600 hover:text-zinc-300 transition-colors flex-shrink-0"
-            style={{ fontSize: "13px" }}>
-            ← <span className="hidden sm:inline">Arena</span>
+      {/* Broadcast header */}
+      <header className="debate-broadcast sticky top-0 z-20">
+        <div className="debate-broadcast-inner">
+          <button onClick={() => router.push("/")} className="debate-back">
+            <span>←</span>
+            <span className="hidden sm:inline">ARENA</span>
           </button>
 
           {topic && (
-            <p className="text-sm font-medium truncate min-w-0 flex-1 text-center px-2"
-              style={{ color: "#d4d4d8" }} title={topic}>&ldquo;{truncatedTopic}&rdquo;</p>
+            <p className="flex-1 min-w-0 text-center px-4 text-sm font-medium truncate"
+              style={{ color: "#a1a1aa" }}>
+              &ldquo;{truncatedTopic}&rdquo;
+            </p>
           )}
 
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button onClick={copyLink}
-              className="text-[11px] font-medium px-2.5 py-1 rounded-lg transition-all duration-200 hidden sm:block"
-              style={{ background: "rgba(255,255,255,0.04)", color: copied ? "#10b981" : "#71717a", border: "1px solid rgba(255,255,255,0.07)" }}>
-              {copied ? "✓ Copied" : "Share"}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <button onClick={copyLink} className="debate-share-btn hidden sm:block">
+              {copied ? "✓ COPIED" : "SHARE"}
             </button>
             {status === "streaming" && (
-              <div className="flex items-center gap-1.5">
-                <div className="live-dot w-2 h-2 rounded-full" style={{ background: "#ef4444" }} />
-                <span className="text-[11px] font-medium text-red-500 hidden sm:block">Live</span>
+              <div className="flex items-center gap-2">
+                <span className="arena-live-dot" />
+                <span className="text-[10px] font-mono font-bold tracking-widest text-rose-500 uppercase hidden sm:block">LIVE</span>
               </div>
             )}
-            {status === "done" && (
-              <span className="text-[11px] font-medium text-emerald-500">Done</span>
-            )}
-            {status === "restored" && (
-              <span className="text-[11px] font-medium text-purple-400">Restored</span>
-            )}
+            {status === "done"     && <span className="debate-status-badge" style={{ color: "#10b981" }}>FINAL</span>}
+            {status === "restored" && <span className="debate-status-badge" style={{ color: "#8b5cf6" }}>RESTORED</span>}
           </div>
         </div>
+
+        {/* Fighter matchup strip */}
+        {fighterA && fighterB && (
+          <div className="debate-fighter-strip">
+            <div className="fighter-tag-pill" style={{ color: fighterA.color, borderColor: fighterA.border, background: fighterA.dimBg }}>
+              <span>{fighterA.emoji}</span>
+              <span className="font-mono font-black tracking-wider uppercase text-[11px]">{agents[0]}</span>
+            </div>
+            <div className="clash-vs-pip">VS</div>
+            <div className="fighter-tag-pill fighter-tag-pill-right" style={{ color: fighterB.color, borderColor: fighterB.border, background: fighterB.dimBg }}>
+              <span className="font-mono font-black tracking-wider uppercase text-[11px]">{agents[1]}</span>
+              <span>{fighterB.emoji}</span>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Main */}
-      <main className="relative z-10 mx-auto w-full max-w-3xl flex-1 px-4 py-8 flex flex-col gap-5 overflow-x-hidden">
+      <main className="relative z-10 mx-auto w-full max-w-5xl flex-1 px-4 py-8 flex flex-col gap-6 overflow-x-hidden">
 
-        {/* Loading */}
-        {status === "streaming" && args.length === 0 && (
-          <div className="flex flex-col items-center gap-3 py-24">
-            <div className="w-8 h-8 rounded-full border-2 animate-spin"
-              style={{ borderColor: "rgba(124,58,237,0.2)", borderTopColor: "#7c3aed" }} />
-            <p className="text-sm" style={{ color: "#a1a1aa" }}>Generating arguments…</p>
-          </div>
-        )}
+        {/* Boot loader */}
+        {status === "streaming" && args.length === 0 && <BootLoader agents={agents} />}
 
         {/* Rounds */}
         {roundGroups.map((group, ri) => (
-          <div key={ri} className="flex flex-col gap-4">
-            {/* Divider */}
-            <div className="flex items-center gap-3 py-1">
-              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.05)" }} />
-              <span className="text-[10px] font-medium tracking-[0.3em] uppercase" style={{ color: "#71717a" }}>Round {ri + 1}</span>
-              <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.05)" }} />
-            </div>
-
-            {group.map((arg) => (
-              <ArgCard
-                key={arg.argument_id}
-                arg={arg}
-                side={agents.indexOf(arg.agent) === 0 ? "left" : "right"}
-                canVote={status === "done"}
-                onVote={castVote}
-                voteLoading={voteLoading}
-              />
-            ))}
+          <div key={ri}>
+            <RoundBanner round={ri + 1} />
+            <ClashGrid
+              group={group}
+              agents={agents}
+              canVote={status === "done"}
+              onVote={castVote}
+              voteLoading={voteLoading}
+            />
           </div>
         ))}
 
-        {/* Thinking */}
-        {nextSpeaker && args.length > 0 && (
-          <div className="flex items-center gap-2 px-4 py-3 rounded-xl"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-            <span className="text-sm">{getFighter(nextSpeaker).emoji}</span>
-            <span className="text-sm" style={{ color: "#a1a1aa" }}>{nextSpeaker} is thinking</span>
-            <div className="flex gap-1 ml-1">
-              {[0,1,2].map((i) => (
-                <div key={i} className="w-1.5 h-1.5 rounded-full thinking-dot-anim"
-                  style={{ background: "#52525b", animationDelay: `${i*0.2}s` }} />
-              ))}
+        {/* Thinking stream */}
+        {nextSpeaker && args.length > 0 && (() => {
+          const f = getFighter(nextSpeaker);
+          return (
+            <div className="thinking-stream">
+              <div className="thinking-avatar" style={{ background: f.dimBg, border: `1px solid ${f.border}` }}>
+                {f.emoji}
+              </div>
+              <span className="thinking-text">{nextSpeaker} IS PROCESSING</span>
+              <div className="thinking-dots">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="thinking-dot" style={{ background: f.color, animationDelay: `${i * 0.2}s` }} />
+                ))}
+              </div>
+              <span className="text-[9px] font-mono text-zinc-700 uppercase tracking-widest hidden sm:block">NEURAL LINK ACTIVE</span>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
-        {/* Summary */}
+        {/* Verdict */}
         {summary && (
-          <div className="fade-in rounded-2xl overflow-hidden"
-            style={{ background: "rgba(251,191,36,0.04)", border: "1px solid rgba(251,191,36,0.15)" }}>
-            <div className="px-4 py-3 flex items-center gap-2"
-              style={{ borderBottom: "1px solid rgba(251,191,36,0.1)" }}>
-              <span className="text-lg">👑</span>
+          <div className="verdict-card">
+            <div className="verdict-header">
+              <span className="verdict-crown">👑</span>
               <div>
-                <p className="text-[10px] font-semibold tracking-[0.3em] uppercase text-amber-500/80">Final Verdict</p>
-                <p className="text-[11px] text-amber-600/50">Moderator Summary</p>
+                <div className="verdict-title">FINAL VERDICT</div>
+                <div className="verdict-sub">Moderator Summary</div>
               </div>
             </div>
-            <div className="px-4 py-4">
-              <p style={{ color: "#e4e4e7", fontSize: "15px", lineHeight: "1.75" }}>
-                {summary}
-              </p>
-            </div>
+            <div className="verdict-body">{summary}</div>
           </div>
         )}
 
         {/* Vote CTA */}
         {status === "done" && totalVotes === 0 && agents.length === 2 && (
-          <div className="fade-in rounded-2xl px-4 py-5 text-center"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <p className="text-white font-semibold text-sm mb-1">Who made the stronger case?</p>
-            <p className="text-xs mb-4" style={{ color: "#a1a1aa" }}>Vote on individual arguments above, or pick an overall winner</p>
-            <div className="flex items-center justify-center gap-3 flex-wrap">
+          <div className="vote-cta">
+            <p className="text-white font-bold text-sm mb-1">Who made the stronger case?</p>
+            <p className="text-[10px] font-mono tracking-widest uppercase mb-6" style={{ color: "#52525b" }}>
+              VOTE ON ARGUMENTS ABOVE OR PICK AN OVERALL WINNER
+            </p>
+            <div className="flex items-center justify-center gap-4 flex-wrap">
               {agents.map((a) => {
                 const f = getFighter(a);
                 return (
                   <button key={a} onClick={() => castVote(a)} disabled={voteLoading}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-40"
+                    className="vote-fighter-btn disabled:opacity-40"
                     style={{ background: f.dimBg, color: f.color, border: `1px solid ${f.border}` }}
-                    onMouseEnter={(e) => (e.currentTarget.style.boxShadow = `0 0 20px ${f.glow}`)}
+                    onMouseEnter={(e) => (e.currentTarget.style.boxShadow = `0 0 28px ${f.glow}, 0 8px 30px rgba(0,0,0,0.4)`)}
                     onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}>
                     {f.emoji} {a}
                   </button>
@@ -568,32 +639,28 @@ export default function DebatePage() {
           </div>
         )}
 
-        {/* Post vote */}
+        {/* Post-vote */}
         {totalVotes > 0 && (
           <div className="fade-in text-center py-2">
-            <p className="text-sm" style={{ color: "#a1a1aa" }}>
-              {totalVotes} vote{totalVotes !== 1 ? "s" : ""} cast · thanks for participating
+            <p className="text-[11px] font-mono tracking-widest uppercase" style={{ color: "#3f3f46" }}>
+              {totalVotes} VOTE{totalVotes !== 1 ? "S" : ""} CAST // THANKS FOR PARTICIPATING
             </p>
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div className="rounded-xl px-4 py-3 text-rose-400 text-sm"
-            style={{ background: "rgba(244,63,94,0.05)", border: "1px solid rgba(244,63,94,0.15)" }}>
-            {error}
+          <div className="rounded-xl px-4 py-3 font-mono text-sm"
+            style={{ background: "rgba(244,63,94,0.05)", border: "1px solid rgba(244,63,94,0.15)", color: "#f87171" }}>
+            [ERROR] {error}
           </div>
         )}
 
         {/* New debate */}
         {(status === "done" || status === "restored") && (
           <div className="flex justify-center pt-4 pb-8">
-            <button onClick={() => router.push("/")}
-              className="px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
-              style={{ background: "rgba(255,255,255,0.03)", color: "#71717a", border: "1px solid rgba(255,255,255,0.07)" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "white"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "#71717a"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)"; }}>
-              Start a new debate →
+            <button onClick={() => router.push("/")} className="new-arena-btn">
+              ↩ NEW ARENA
             </button>
           </div>
         )}

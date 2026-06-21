@@ -167,16 +167,16 @@ export default function Home() {
         </div>
         <div className="hidden md:flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className="text-zinc-600">{"FPS:"}</span>
-            <span className="text-emerald-500 font-semibold">{"60.0"}</span>
+            <span className="text-zinc-600">{"AGENTS:"}</span>
+            <span className="text-emerald-500 font-semibold">{FIGHTERS.length}{" LOADED"}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-zinc-600">{"LATENCY:"}</span>
-            <span className="text-emerald-500 font-semibold">{"14ms"}</span>
+            <span className="text-zinc-600">{"ROUNDS:"}</span>
+            <span className="text-emerald-500 font-semibold">{"3 PER CLASH"}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-zinc-600">{"SPECTATORS:"}</span>
-            <span className="text-violet-400 font-semibold">{"184,912 ONLINE"}</span>
+            <span className="text-zinc-600">{"ENGINE:"}</span>
+            <span className="text-violet-400 font-semibold">{"GROQ"}</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
