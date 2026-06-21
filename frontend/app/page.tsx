@@ -12,9 +12,9 @@ const FIGHTERS = [
     tagline: "The Eternal Believer",
     color: "#10b981",
     colorRgb: "16,185,129",
-    style: "RHETORIC / EMPATHY",
+    style: "Rhetoric · Empathy",
     model: "LLAMA-3-70B-INSTRUCT",
-    bio: "Unwavering commitment to constructive outcomes. Believes in human potential, technological progress, and ethical synergy."
+    bio: "Builds constructive arguments grounded in human potential, progress, and ethical synergy.",
   },
   {
     id: "Critic",
@@ -22,9 +22,9 @@ const FIGHTERS = [
     tagline: "The Devil's Advocate",
     color: "#f43f5e",
     colorRgb: "244,63,94",
-    style: "SKEPTICISM / LOGIC",
+    style: "Skepticism · Logic",
     model: "MIXTRAL-8X22B",
-    bio: "Relentless critical thinker. Exposes logical fallacies, uncovers hidden agendas, and demands empirical rigor."
+    bio: "Exposes logical fallacies, uncovers hidden agendas, and demands empirical rigor.",
   },
   {
     id: "Philosopher",
@@ -32,9 +32,9 @@ const FIGHTERS = [
     tagline: "The Truth Seeker",
     color: "#8b5cf6",
     colorRgb: "139,92,246",
-    style: "DIALECTIC / SYNTHESIS",
+    style: "Dialectic · Synthesis",
     model: "CLAUDE-3.5-SONNET",
-    bio: "Rises above binary logic to evaluate ethical implications, historical contexts, and existential truths."
+    bio: "Evaluates ethical implications, historical contexts, and existential truths.",
   },
 ] as const;
 
@@ -42,14 +42,14 @@ function visualValue(index: number, salt: number) {
   return ((index * 137 + salt * 271) % 997) / 997;
 }
 
-const HOME_PARTICLES = Array.from({ length: 12 }, (_, i) => ({
+const HOME_PARTICLES = Array.from({ length: 10 }, (_, i) => ({
   id: i,
   x: visualValue(i, 1) * 100,
   size: visualValue(i, 2) * 1.5 + 0.5,
   duration: visualValue(i, 3) * 20 + 15,
   delay: visualValue(i, 4) * 15,
   drift: (visualValue(i, 5) - 0.5) * 80,
-  opacity: visualValue(i, 6) * 0.2 + 0.05,
+  opacity: visualValue(i, 6) * 0.15 + 0.04,
   color: ["#7c3aed", "#6d28d9", "#4f46e5"][Math.floor(visualValue(i, 7) * 3)],
 }));
 
@@ -76,12 +76,11 @@ export default function Home() {
   const [agentB, setAgentB] = useState("Critic");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
   const [loadingStep, setLoadingStep] = useState(0);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
 
-  const fighterA = FIGHTERS.find((fighter) => fighter.id === agentA) ?? FIGHTERS[0];
-  const fighterB = FIGHTERS.find((fighter) => fighter.id === agentB) ?? FIGHTERS[1];
+  const fighterA = FIGHTERS.find((f) => f.id === agentA) ?? FIGHTERS[0];
+  const fighterB = FIGHTERS.find((f) => f.id === agentB) ?? FIGHTERS[1];
 
   const topicPrompts = [
     "AI deserves legal rights",
@@ -91,17 +90,14 @@ export default function Home() {
 
   useEffect(() => {
     if (!loading) return;
-
     const messages = [
-      `[SYS] CONNECTING TO INFRASTRUCTURE HOST: ${API}...`,
-      `[SYS] ESTABLISHING PARALLEL SYNAPSE HANDSHAKE...`,
-      `[SYS] MOUNTING CORE 01: ${fighterA.id.toUpperCase()} [${fighterA.model}]`,
-      `[SYS] MOUNTING CORE 02: ${fighterB.id.toUpperCase()} [${fighterB.model}]`,
-      `[SYS] CONFLICT MATRIX INJECTED: "${topic.trim()}"`,
-      `[SYS] PRIMING GROQ INFERENCE SHARDS...`,
-      `[SYS] STREAM PATHWAY CREATED. INITIALIZING NEURAL COMBUSTION FEED...`
+      `[SYS] Connecting to ${API}...`,
+      `[SYS] Loading ${fighterA.id} (${fighterA.model})`,
+      `[SYS] Loading ${fighterB.id} (${fighterB.model})`,
+      `[SYS] Topic locked: "${topic.trim()}"`,
+      `[SYS] Priming Groq inference...`,
+      `[SYS] Stream ready — launching debate`,
     ];
-
     const interval = setInterval(() => {
       setLoadingStep((prev) => {
         const next = prev + 1;
@@ -112,15 +108,14 @@ export default function Home() {
         clearInterval(interval);
         return prev;
       });
-    }, 450);
-
+    }, 480);
     return () => clearInterval(interval);
   }, [loading, fighterA, fighterB, topic]);
 
   async function handleStart() {
     if (!topic.trim() || loading) return;
     setLoadingStep(0);
-    setTerminalLogs([`[SYS] CONNECTING TO INFRASTRUCTURE HOST: ${API}...`]);
+    setTerminalLogs([`[SYS] Connecting to ${API}...`]);
     setLoading(true);
     setError("");
     try {
@@ -140,346 +135,177 @@ export default function Home() {
   }
 
   return (
-    <div className="arena-home min-h-screen flex flex-col overflow-x-hidden fade-in" style={{ background: "#050508" }}>
+    <div className="min-h-screen flex flex-col overflow-x-hidden fade-in" style={{ background: "#050508" }}>
       <Particles />
 
-      {/* Top Broadcast Overlay Bar */}
-      <div className="w-full border-b border-zinc-900/80 bg-black/60 backdrop-blur-md px-4 py-2 relative z-30 flex flex-wrap items-center justify-between gap-4 text-[9px] font-mono tracking-wider text-zinc-500 uppercase select-none">
-        <div className="flex items-center gap-3">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600"></span>
-          </span>
-          <span className="text-rose-500 font-bold tracking-widest">{"LIVE BROADCAST"}</span>
-          <span className="text-zinc-700">|</span>
-          <span>{"FEED: PRIMARY-US-EAST"}</span>
-          <span className="text-zinc-700">|</span>
-          <span className="text-[#a78bfa] font-semibold">{"SECURE_LINK: ACTIVE"}</span>
-        </div>
-        <div className="hidden md:flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <span className="text-zinc-600">{"FORMAT:"}</span>
-            <span className="text-emerald-500 font-semibold">{"2 VS 2"}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-zinc-600">{"ROUNDS:"}</span>
-            <span className="text-emerald-500 font-semibold">{"3 PER CLASH"}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-zinc-600">{"ENGINE:"}</span>
-            <span className="text-violet-400 font-semibold">{"GROQ"}</span>
-          </div>
-        </div>
+      {/* ── Minimal nav ── */}
+      <nav className="home-nav relative z-30">
+        <span className="home-brand">Debate Arena</span>
         <div className="flex items-center gap-2">
-          <span className="text-zinc-600">{"EST_EPOCH:"}</span>
-          <span className="text-zinc-400 font-mono">{"2026.06.21"}</span>
+          <span className="arena-live-dot" />
+          <span className="text-[10px] font-mono text-rose-500 font-bold uppercase tracking-widest">Live</span>
+          <span className="text-zinc-800 mx-1">·</span>
+          <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest">Groq · 3 rounds</span>
+        </div>
+      </nav>
+
+      {/* ── Hero image — full width, title overlaid ── */}
+      <div className="fight-viewport relative z-10 mx-3 sm:mx-6 mt-4 rounded-[28px]">
+        <div className="fight-image" aria-hidden />
+        <div className="fight-vignette" aria-hidden />
+
+        {/* Centered title */}
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6">
+          <h1 className="arena-wordmark select-none" aria-label="Debate Arena">
+            <span className="arena-wordmark-solid">DEBATE</span>
+            <span className="arena-wordmark-outline">ARENA</span>
+          </h1>
+          <p className="mt-4 text-sm text-white/40 max-w-xs leading-relaxed hidden sm:block">
+            Pit two AI minds against each other on any topic
+          </p>
+        </div>
+
+        {/* Fighter HUDs */}
+        <div className="fight-hud fight-hud-left z-20">
+          <span className="fight-hud-index text-emerald-400 font-mono tracking-widest flex items-center gap-1.5">
+            <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+            ONLINE
+          </span>
+          <strong>{fighterA.emoji} {fighterA.id}</strong>
+          <small className="mt-1 font-sans" style={{ color: fighterA.color }}>{fighterA.tagline}</small>
+        </div>
+        <div className="fight-hud fight-hud-right z-20">
+          <span className="fight-hud-index text-rose-400 font-mono tracking-widest flex items-center gap-1.5 justify-end">
+            ONLINE
+            <span className="w-1 h-1 rounded-full bg-rose-500 animate-pulse" />
+          </span>
+          <strong>{fighterB.id} {fighterB.emoji}</strong>
+          <small className="mt-1 font-sans" style={{ color: fighterB.color }}>{fighterB.tagline}</small>
+        </div>
+        <div className="fight-impact z-20" aria-hidden>
+          <span className="fight-impact-ring fight-impact-ring-a" />
+          <span className="fight-impact-ring fight-impact-ring-b" />
+          <b className="font-mono">VS</b>
+        </div>
+        <div className="fight-readout z-20" aria-hidden>
+          <span>{fighterA.model}</span><i /><span>{fighterB.model}</span>
         </div>
       </div>
 
-      <div className="arena-ticker relative z-20 overflow-hidden py-2 bg-gradient-to-r from-violet-950/20 via-rose-950/10 to-violet-950/20 border-b border-violet-900/20">
-        <div className="arena-ticker-track text-[9px] font-bold tracking-[0.32em] uppercase text-violet-400">
-          <span>{"// COGNITIVE SYNC COMPLETE"}</span><i>✦</i>
-          <span>{"// MODEL TEMP: 0.75"}</span><i>✦</i>
-          <span>{"// ALL SYSTEMS OPERATIONAL"}</span><i>✦</i>
-          <span>{"// SELECTION BAY ARMED"}</span><i>✦</i>
-          <span>{"// STANDBY FOR CONTROVERSY MATRIX"}</span><i>✦</i>
-          <span>{"// ROUND THRESHOLD: 3 ROUNDS"}</span><i>✦</i>
-          
-          <span>{"// COGNITIVE SYNC COMPLETE"}</span><i>✦</i>
-          <span>{"// MODEL TEMP: 0.75"}</span><i>✦</i>
-          <span>{"// ALL SYSTEMS OPERATIONAL"}</span><i>✦</i>
-          <span>{"// SELECTION BAY ARMED"}</span><i>✦</i>
-          <span>{"// STANDBY FOR CONTROVERSY MATRIX"}</span><i>✦</i>
-          <span>{"// ROUND THRESHOLD: 3 ROUNDS"}</span><i>✦</i>
-        </div>
-      </div>
+      {/* ── Main form ── */}
+      <main className="relative z-10 flex-1 w-full max-w-2xl mx-auto px-4 py-8 flex flex-col gap-8">
 
-      <main className="relative z-10 flex-1 px-4 py-8 sm:py-12">
-        <div className="mx-auto w-full max-w-6xl">
-          <header className="arena-hero relative text-center mb-8 sm:mb-12 px-4 py-8">
-            <div className="relative z-10">
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <span className="arena-live-dot" />
-                <span className="text-[10px] font-mono tracking-[0.35em] uppercase text-violet-400">{"COGNITIVE FEED READY // 2 AGENTS LOADED"}</span>
-              </div>
-              <h1 className="arena-wordmark select-none tracking-tighter" aria-label="Debate Arena">
-                <span className="arena-wordmark-solid font-black bg-gradient-to-r from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent">DEBATE</span>
-                <span className="arena-wordmark-outline font-black">ARENA</span>
-              </h1>
-              <p className="mx-auto mt-6 max-w-lg text-sm leading-relaxed text-zinc-400 font-sans">
-                Witness the clash of artificial minds. Plug in a controversy, load your gladiators, and let the inference engine settle the score.
-              </p>
+        {loading ? (
+          /* Loading terminal */
+          <div className="bg-[#030306] border border-zinc-900/80 rounded-2xl p-5 font-mono">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-bold tracking-widest text-emerald-500 uppercase">Launching debate…</span>
             </div>
-          </header>
-
-          <section className="fight-viewport mb-8" aria-label={`${fighterA.id} versus ${fighterB.id}`}>
-            <div className="fight-image" aria-hidden />
-            <div className="fight-vignette" aria-hidden />
-            <div className="telemetry-grid-overlay opacity-30" />
-            
-            {/* Cyber Brackets in corners */}
-            <div className="absolute inset-4 pointer-events-none border border-white/5 opacity-60">
-              <div className="arena-corner arena-corner-tl" style={{ borderColor: "rgba(255,255,255,0.3)" }} />
-              <div className="arena-corner arena-corner-tr" style={{ borderColor: "rgba(255,255,255,0.3)" }} />
-              <div className="arena-corner arena-corner-bl" style={{ borderColor: "rgba(255,255,255,0.3)" }} />
-              <div className="arena-corner arena-corner-br" style={{ borderColor: "rgba(255,255,255,0.3)" }} />
+            <div className="space-y-1.5">
+              {terminalLogs.map((log, i) => (
+                <div key={i} className="loading-terminal-log text-xs">{log}</div>
+              ))}
+              {loadingStep < 5 && (
+                <div className="loading-terminal-log text-xs flex items-center gap-1 text-emerald-400/50">
+                  <span>&gt;_ connecting</span>
+                  <span className="inline-block w-1.5 h-3 bg-emerald-400 animate-pulse" />
+                </div>
+              )}
             </div>
-
-            {/* Top telemetry bar */}
-            <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-center text-[8px] font-mono tracking-wider text-white/40">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-[#8b5cf6] rounded-full animate-pulse" />
-                <span>{"CAMERA_A: BROAD_LENS"}</span>
-              </div>
-              <span className="hidden md:inline">{"SIGNAL COHERENCE: 100% // NO DELAY"}</span>
-              <span>{fighterA.model}{" VS "}{fighterB.model}</span>
-            </div>
-
-            {/* Left Fighter Telemetry */}
-            <div className="fight-hud fight-hud-left z-20">
-              <span className="fight-hud-index text-emerald-400 font-mono tracking-widest flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                {"CHALLENGER_01 // ONLINE"}
-              </span>
-              <strong>{fighterA.id}</strong>
-              <small className="mt-2 font-mono" style={{ color: fighterA.color }}>{fighterA.style}</small>
-              <small className="mt-1 font-sans" style={{ color: fighterA.color }}>{fighterA.tagline}</small>
-            </div>
-
-            {/* Right Fighter Telemetry */}
-            <div className="fight-hud fight-hud-right z-20">
-              <span className="fight-hud-index text-rose-400 font-mono tracking-widest flex items-center gap-1.5 justify-end">
-                {"CHALLENGER_02 // ONLINE"}
-                <span className="w-1 h-1 rounded-full bg-rose-500 animate-pulse" />
-              </span>
-              <strong>{fighterB.id}</strong>
-              <small className="mt-2 font-mono" style={{ color: fighterB.color }}>{fighterB.style}</small>
-              <small className="mt-1 font-sans" style={{ color: fighterB.color }}>{fighterB.tagline}</small>
-            </div>
-
-            <div className="fight-impact" aria-hidden>
-              <span className="fight-impact-ring fight-impact-ring-a" />
-              <span className="fight-impact-ring fight-impact-ring-b" />
-              <b className="font-mono">{"VS"}</b>
-            </div>
-            
-            <div className="fight-readout" aria-hidden>
-              <span>{"INF_SHARD: "}{fighterA.model}{" VS "}{fighterB.model}</span><i /><span>{"STABLE NEURAL LINK // COHERENCE 100%"}</span>
-            </div>
-          </section>
-
-          <section className="relative mb-8">
-            <div className="grid md:grid-cols-[1fr_100px_1fr] gap-4 sm:gap-6 items-stretch">
-              {/* Left Challenger Bay */}
-              <div className="fighter-bay fighter-bay-left rounded-2xl p-6 relative overflow-hidden transition-all duration-300 border border-zinc-800/80 bg-gradient-to-b from-zinc-950/60 to-zinc-950/10 flex flex-col justify-between"
-                   style={{ "--fighter-color": fighterA.color, "--fighter-color-rgb": fighterA.colorRgb } as React.CSSProperties}>
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(var(--fighter-color-rgb),0.05),transparent_60%)] pointer-events-none" />
-                
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="text-[9px] font-mono font-black tracking-[0.25em] uppercase text-zinc-500" style={{ color: fighterA.color }}>
-                      {"[ SLOT_01 // ACTIVE_CHALLENGER ]"}
-                    </span>
-                    <span className="text-[9px] font-mono text-zinc-600 bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-800">
-                      {"MODEL: "}{fighterA.model}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div>
-                      <div className="fighter-emoji flex items-center justify-center w-14 h-14 rounded-full border border-zinc-800 bg-zinc-950/80 text-3xl mb-4 shadow-inner" style={{ textShadow: `0 0 12px ${fighterA.color}` }}>
-                        {fighterA.emoji}
-                      </div>
-                      <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight uppercase" style={{ textShadow: `0 0 20px rgba(255,255,255,0.05)` }}>
-                        {fighterA.id}
-                      </h2>
-                      <p className="text-[10px] font-mono font-bold tracking-wider mt-1 uppercase" style={{ color: fighterA.color }}>
-                        {fighterA.style}
-                      </p>
-                    </div>
-                    <span className="fighter-number select-none">{"01"}</span>
-                  </div>
-
-                  {/* Character Bio */}
-                  <p className="text-xs text-zinc-500 mb-6 leading-relaxed border-t border-zinc-900 pt-4 font-sans">
-                    {fighterA.bio}
-                  </p>
-
-                </div>
-
-                {/* Selection Chips */}
-                <div>
-                  <div className="text-[9px] font-mono text-zinc-600 mb-3 tracking-widest uppercase">{"SWAP GLADIATOR SLOT 01:"}</div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {FIGHTERS.map((fighter) => (
-                      <button key={fighter.id} type="button" aria-label={`Choose ${fighter.id} as challenger one`}
-                        onClick={() => { if (agentB !== fighter.id) setAgentA(fighter.id); }} disabled={agentB === fighter.id}
-                        className={`fighter-chip cursor-pointer py-1.5 px-2 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 ${agentA === fighter.id ? "fighter-chip-active" : ""} disabled:opacity-20 disabled:cursor-not-allowed`}
-                        style={{ "--chip-color": fighter.color } as React.CSSProperties}>
-                        <span className="text-sm">{fighter.emoji}</span>
-                        <small className="font-mono text-[9px] font-bold">{fighter.id.toUpperCase()}</small>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Versus Reactor */}
-              <div className="versus-reactor flex md:flex-col items-center justify-center gap-3 py-4 select-none">
-                <span className="versus-line bg-gradient-to-b from-transparent via-[#8b5cf6]/50 to-transparent" />
-                <div className="versus-core w-16 h-16 rounded-full border border-[#8b5cf6]/30 bg-zinc-950 flex items-center justify-center relative shadow-[0_0_25px_rgba(139,92,246,0.15)]">
-                  <div className="absolute inset-1 rounded-full border border-[#8b5cf6]/10 animate-ping opacity-25" />
-                  <span className="text-lg font-black font-mono italic tracking-tighter text-white bg-gradient-to-br from-[#7c3aed] to-[#4f46e5] w-12 h-12 rounded-full flex items-center justify-center shadow-lg">{"VS"}</span>
-                </div>
-                <span className="versus-line bg-gradient-to-b from-transparent via-[#8b5cf6]/50 to-transparent" />
-              </div>
-
-              {/* Right Challenger Bay */}
-              <div className="fighter-bay fighter-bay-right rounded-2xl p-6 relative overflow-hidden transition-all duration-300 border border-zinc-800/80 bg-gradient-to-b from-zinc-950/60 to-zinc-950/10 flex flex-col justify-between"
-                   style={{ "--fighter-color": fighterB.color, "--fighter-color-rgb": fighterB.colorRgb } as React.CSSProperties}>
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(var(--fighter-color-rgb),0.05),transparent_60%)] pointer-events-none" />
-                
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="text-[9px] font-mono text-zinc-600 bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-800">
-                      {"MODEL: "}{fighterB.model}
-                    </span>
-                    <span className="text-[9px] font-mono font-black tracking-[0.25em] uppercase text-zinc-500" style={{ color: fighterB.color }}>
-                      {"[ SLOT_02 // ACTIVE_CHALLENGER ]"}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-start justify-between gap-4 mb-4 flex-row-reverse">
-                    <div className="text-right">
-                      <div className="fighter-emoji flex items-center justify-center w-14 h-14 rounded-full border border-zinc-800 bg-zinc-950/80 text-3xl mb-4 ml-auto shadow-inner" style={{ textShadow: `0 0 12px ${fighterB.color}` }}>
-                        {fighterB.emoji}
-                      </div>
-                      <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight uppercase" style={{ textShadow: `0 0 20px rgba(255,255,255,0.05)` }}>
-                        {fighterB.id}
-                      </h2>
-                      <p className="text-[10px] font-mono font-bold tracking-wider mt-1 uppercase" style={{ color: fighterB.color }}>
-                        {fighterB.style}
-                      </p>
-                    </div>
-                    <span className="fighter-number select-none">{"02"}</span>
-                  </div>
-
-                  {/* Character Bio */}
-                  <p className="text-xs text-zinc-500 mb-6 leading-relaxed border-t border-zinc-900 pt-4 text-left sm:text-right font-sans">
-                    {fighterB.bio}
-                  </p>
-
-                </div>
-
-                {/* Selection Chips */}
-                <div>
-                  <div className="text-[9px] font-mono text-zinc-600 mb-3 tracking-widest uppercase text-left sm:text-right">{"SWAP GLADIATOR SLOT 02:"}</div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {FIGHTERS.map((fighter) => (
-                      <button key={fighter.id} type="button" aria-label={`Choose ${fighter.id} as challenger two`}
-                        onClick={() => { if (agentA !== fighter.id) setAgentB(fighter.id); }} disabled={agentA === fighter.id}
-                        className={`fighter-chip cursor-pointer py-1.5 px-2 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 ${agentB === fighter.id ? "fighter-chip-active" : ""} disabled:opacity-20 disabled:cursor-not-allowed`}
-                        style={{ "--chip-color": fighter.color } as React.CSSProperties}>
-                        <span className="text-sm">{fighter.emoji}</span>
-                        <small className="font-mono text-[9px] font-bold">{fighter.id.toUpperCase()}</small>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="command-deck rounded-[30px] p-5 sm:p-6 border border-zinc-900 bg-zinc-950/40 backdrop-blur-md relative overflow-hidden">
-            <div className="telemetry-grid-overlay opacity-25" />
-            
-            {loading ? (
-              <div className="min-h-[160px] bg-[#030306] border border-zinc-900 rounded-2xl p-5 flex flex-col justify-between font-mono">
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-bold tracking-widest text-emerald-500 uppercase">{"SYNAPSE INITIALIZATION SEQUENCE IN PROGRESS..."}</span>
-                  </div>
-                  {terminalLogs.map((log, i) => (
-                    <div key={i} className="loading-terminal-log text-xs md:text-sm">
-                      {log}
-                    </div>
-                  ))}
-                  {loadingStep < 6 && (
-                    <div className="loading-terminal-log text-xs md:text-sm animate-pulse flex items-center gap-1 text-emerald-400/60">
-                      <span>{"&gt;_ PINGING_INFRASTRUCTURE_NODES"}</span>
-                      <span className="inline-block w-1.5 h-3 bg-emerald-400" style={{ animation: "pulseAmber 1s infinite" }} />
-                    </div>
-                  )}
-                </div>
-                <div className="flex justify-between items-center text-[9px] text-zinc-600 border-t border-zinc-900/50 pt-3 mt-4">
-                  <span>{"ESTIMATED LINK TIME: ~3.0 SEC"}</span>
-                  <span>{"STATUS: "}{loadingStep >= 6 ? "REDIRECTING" : "ESTABLISHING CONNECTIVITY"}</span>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center justify-between gap-4 mb-4 px-1">
-                  <label htmlFor="debate-topic" className="text-[10px] font-mono font-bold tracking-[0.25em] uppercase text-zinc-400 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                    {"INJECT MATRIX / CONTROVERSY PARAMETER"}
-                  </label>
-                  <span className="hidden sm:block text-[9px] font-mono text-zinc-600">{"CMD + ENTER TO DEPLOY STREAM"}</span>
-                </div>
-                
-                <div className="grid lg:grid-cols-[1fr_240px] gap-4 items-stretch">
-                  <div className="topic-terminal relative flex-1">
-                    <span className="topic-prompt text-violet-500 font-black" aria-hidden>&gt;_</span>
-                    <textarea id="debate-topic" value={topic} onChange={(e) => setTopic(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleStart(); }}
-                      placeholder="Type an impossible question dangerous enough to split the room..." rows={3}
-                      className="w-full resize-none rounded-2xl py-5 pl-14 pr-4 text-white text-[15px] leading-relaxed outline-none" />
-                    <div className="topic-count font-mono">{topic.length.toString().padStart(3, "0")}{" / 200 CHARS"}</div>
-                  </div>
-                  
-                  <button type="button" onClick={handleStart} disabled={loading || !topic.trim()} 
-                    className="arena-launch cursor-pointer rounded-2xl flex flex-col justify-between p-5 text-left disabled:opacity-20 disabled:cursor-not-allowed group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-violet-600 via-rose-600 to-violet-600 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
-                    <div className="w-full flex justify-between items-start">
-                      <span className="text-[8px] font-mono tracking-widest text-white/40 uppercase bg-black/40 px-2 py-0.5 rounded border border-white/5">
-                        {"[ SYSTEM_DEPLOY ]"}
-                      </span>
-                      <span className="arena-launch-arrow text-2xl transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1">{"↗"}</span>
-                    </div>
-                    <div>
-                      <span className="block text-xs font-mono text-zinc-300 uppercase tracking-widest mb-1">{"STATION BROADCAST:"}</span>
-                      <span className="arena-launch-label block text-lg font-black tracking-tight uppercase leading-none">{"START CLASH"}</span>
-                    </div>
+          </div>
+        ) : (
+          <>
+            {/* ── Topic input ── */}
+            <div>
+              <label htmlFor="debate-topic" className="block text-sm font-medium text-zinc-300 mb-3">
+                What should they debate?
+              </label>
+              <textarea
+                id="debate-topic"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleStart(); }}
+                placeholder="Drop a hot take, a hard question, or a controversial statement…"
+                rows={3}
+                className="home-textarea"
+              />
+              <div className="flex flex-wrap gap-2 mt-3">
+                {topicPrompts.map((prompt) => (
+                  <button key={prompt} type="button" onClick={() => setTopic(prompt)}
+                    className="home-suggestion">
+                    {prompt}
                   </button>
-                </div>
-                
-                <div className="mt-4">
-                  <div className="text-[9px] font-mono text-zinc-600 mb-2.5 tracking-wider uppercase px-1">{"POPULAR NEURAL COMBAT SIMULATORS:"}</div>
-                  <div className="flex flex-wrap gap-2">
-                    {topicPrompts.map((prompt) => (
-                      <button key={prompt} type="button" onClick={() => setTopic(prompt)} 
-                        className="topic-suggestion cursor-pointer font-mono py-1.5 px-3.5 rounded-full text-[10px] text-zinc-400 border border-zinc-800 bg-zinc-950/40 hover:text-white hover:border-violet-500/50 hover:bg-violet-950/10 transition-all duration-200">
-                        {"+ "}{prompt}
+                ))}
+              </div>
+            </div>
+
+            {/* ── Fighter picker ── */}
+            <div>
+              <p className="text-xs text-zinc-600 font-mono uppercase tracking-widest mb-4">Choose your fighters</p>
+              <div className="home-picker">
+
+                {/* Side A */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] text-zinc-700 font-mono uppercase tracking-wider mb-2">Side A</p>
+                  <div className="flex gap-2">
+                    {FIGHTERS.map((f) => (
+                      <button key={f.id} type="button"
+                        onClick={() => { if (agentB !== f.id) setAgentA(f.id); }}
+                        disabled={agentB === f.id}
+                        aria-label={`Pick ${f.id} as fighter A`}
+                        className={`home-fighter-btn ${agentA === f.id ? "home-fighter-btn-active" : ""}`}
+                        style={{ "--chip-color": f.color } as React.CSSProperties}>
+                        <span>{f.emoji}</span>
+                        <span className="hidden sm:inline text-[11px]">{f.id}</span>
                       </button>
                     ))}
                   </div>
+                  <p className="text-[11px] text-zinc-600 mt-2 leading-snug">{fighterA.bio}</p>
                 </div>
-                
-                {error && (
-                  <div className="text-rose-400 font-mono text-[11px] mt-4 p-3 rounded-lg border border-rose-950/30 bg-rose-950/10 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                    <span>{"ERROR: "}{error}</span>
-                  </div>
-                )}
-              </>
-            )}
-          </section>
 
-          <footer className="flex flex-wrap justify-center sm:justify-between gap-3 mt-6 px-2 text-[9px] font-mono tracking-wider text-zinc-700 uppercase">
-            <span>{"Inference engine // Groq"}</span><span>{"Protocol // Live SSE"}</span><span>{"Audience controls outcome"}</span>
-          </footer>
-        </div>
+                <div className="home-vs-pip flex-shrink-0">VS</div>
+
+                {/* Side B */}
+                <div className="flex-1 min-w-0 flex flex-col items-end">
+                  <p className="text-[10px] text-zinc-700 font-mono uppercase tracking-wider mb-2">Side B</p>
+                  <div className="flex gap-2">
+                    {FIGHTERS.map((f) => (
+                      <button key={f.id} type="button"
+                        onClick={() => { if (agentA !== f.id) setAgentB(f.id); }}
+                        disabled={agentA === f.id}
+                        aria-label={`Pick ${f.id} as fighter B`}
+                        className={`home-fighter-btn ${agentB === f.id ? "home-fighter-btn-active" : ""}`}
+                        style={{ "--chip-color": f.color } as React.CSSProperties}>
+                        <span>{f.emoji}</span>
+                        <span className="hidden sm:inline text-[11px]">{f.id}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-zinc-600 mt-2 text-right leading-snug">{fighterB.bio}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Start button ── */}
+            <button type="button" onClick={handleStart} disabled={loading || !topic.trim()}
+              className="home-start-btn">
+              Start the debate →
+            </button>
+
+            {error && (
+              <div className="text-rose-400 text-sm p-3 rounded-xl border border-rose-950/30 bg-rose-950/10 flex items-center gap-2 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse flex-shrink-0" />
+                {error}
+              </div>
+            )}
+          </>
+        )}
       </main>
+
+      <footer className="relative z-10 text-center pb-6 text-[11px] text-zinc-800 font-mono">
+        Powered by Groq · Live SSE streaming · 3 rounds per debate
+      </footer>
     </div>
   );
 }
