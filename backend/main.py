@@ -21,8 +21,15 @@ import agents
 app = FastAPI(title="Debate Arena API")
 
 # ── CORS ────────────────────────────────────────────────────────────────────
-_raw_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
-ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+# In production, set ALLOWED_ORIGINS to your frontend domain(s).
+# When unset (local dev), allow all origins so any localhost port works.
+_raw_origins = os.environ.get("ALLOWED_ORIGINS", "")
+if _raw_origins.strip():
+    ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+    _allow_origin_regex = None
+else:
+    ALLOWED_ORIGINS = ["*"]
+    _allow_origin_regex = None
 
 app.add_middleware(
     CORSMiddleware,
